@@ -16,12 +16,12 @@ elif command -v apt-get >/dev/null 2>&1; then
   sudo apt-get install -y python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse xclip wl-clipboard || true
 fi
 
-if [ ! -d "venv" ]; then
+if [ ! -d ".venv" ]; then
   echo "iPhone Link: creating virtualenv..."
-  python3 -m venv venv
+  python3 -m venv .venv
 fi
 # shellcheck source=/dev/null
-source venv/bin/activate
+source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 

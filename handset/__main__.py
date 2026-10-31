@@ -13,7 +13,7 @@ def _print_help() -> None:
     print("                                     # child server for the launcher")
     print()
     print("Linux launcher:")
-    print("  ./run_linux.sh                    # same as python -m handset")
+    print("  ./run.sh                          # same as python -m handset")
     print()
     print("Environment variables:")
     print("  PANE_HOST / PANE_PORT            # override host/port")

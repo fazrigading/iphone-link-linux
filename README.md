@@ -160,7 +160,7 @@ pip install -r requirements.txt
 chmod +x run_linux.sh
 
 # 5. Launch iPhone Link
-./run_linux.sh
+./run.sh
 # (or run via: python3 -m handset)
 ```
 
@@ -193,7 +193,7 @@ Privasi dan kendali data Anda adalah prioritas mutlak iPhone Link:
 ## 🐧 Linux Notes
 
 - The Linux frontend is a native windowedpywebview app that reuses the same iPhone Link backend and web UI.
-- Linux builds are **source-based for now**: run `./run_linux.sh` from a checkout, or run `python3 -m handset`.
+- Linux builds are **source-based for now**: run `./run.sh` from a checkout, or run `python3 -m handset`.
 - Linux-specific helpers live in `handset/`:
   - `handset/main.py` — entry point
   - `handset/gui.py` — window + JS bridge
