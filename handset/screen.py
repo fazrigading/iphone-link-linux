@@ -2814,6 +2814,11 @@ def _plain(error: Exception) -> str:
         return text
     if name in {"ConnectionFailedToUsbmuxdError", "MuxError"} or "27015" in text or "usbmux" in text.lower():
         return "Apple Mobile Device service is not running. On Linux this usually means usbmuxd is not running or the iPhone is not connected/trusted. Install and start usbmuxd, reconnect the iPhone over USB, and tap Trust This Computer."
+    if name == "DeviceVersionNotSupportedError" or "Screen streaming needs iOS" in text:
+        return (
+            "Screen streaming needs iOS 27.0 or later; this device runs an older iOS. "
+            "USB device detection, clipboard, and other features still work, but live screen mirroring is unavailable."
+        )
     if name == "UserspaceTunnelUnavailableError":
         return "This phone did not open the display tunnel. It needs iOS 17.4 or later, Trust, and Developer Mode."
     if "CoreDeviceProxy" in text or name == "InvalidServiceError":
