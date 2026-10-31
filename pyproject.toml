@@ -13,6 +13,7 @@ dependencies = [
     "pymobiledevice3>=11.28",
     "pywebview>=5.0",
     "pycaw>=20230407",  # Windows-only audio: only referenced on Windows
+    "PyQt6>=6.5",  # Linux UI backend for pywebview when GTK is unavailable
 ]
 
 [tool.setuptools.packages.find]
