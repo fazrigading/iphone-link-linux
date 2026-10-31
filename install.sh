@@ -25,7 +25,7 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-chmod +x run_linux.sh
+chmod +x run.sh
 
 # Desktop entry
 DESKTOP_DIR="${HOME}/.local/share/applications"
@@ -35,7 +35,7 @@ cat > "$DESKTOP_DIR/iphone-link.desktop" <<DESKTOP
 [Desktop Entry]
 Name=iPhone Link
 Comment=iPhone mirroring and control for Linux
-Exec=$SCRIPT_DIR/run_linux.sh
+Exec=$SCRIPT_DIR/run.sh
 Icon=$ICON_PATH
 Type=Application
 Terminal=false
@@ -43,4 +43,4 @@ Categories=Utility;
 DESKTOP
 update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
 
-echo "iPhone Link: installed. Launch from app menu or run ./run_linux.sh"
+echo "iPhone Link: installed. Launch from app menu or run ./run.sh"
