@@ -32,6 +32,20 @@ except Exception:
     if os.path.isdir("/usr/lib/python3/dist-packages") and "/usr/lib/python3/dist-packages" not in sys.path:
         sys.path.append("/usr/lib/python3/dist-packages")
 
+try:
+    import gi  # noqa: F401
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("WebKit2", "4.1")
+except Exception as _gi_err:
+    print(
+        "iPhone Link: missing Linux system dependency PyGObject/WebKit2GTK.\n"
+        "  Fedora:   sudo dnf install python3-gobject webkit2gtk4.1\n"
+        "  Debian:   sudo apt install python3-gi gir1.2-webkit2-4.1\n"
+        f"  (import error: {_gi_err})",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
 from handset import get_app_root, get_bundle_root
 from handset.server import HOST, PORT, create_http_server
 
