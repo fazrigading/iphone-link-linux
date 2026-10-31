@@ -3,7 +3,7 @@ set -euo pipefail
 
 # iPhone Link — Linux launcher helper
 # Usage:
-#   ./build_executable.sh
+#   ./build.sh
 #
 # This script prepares the Linux run script and verifies the launcher shape.
 # It does NOT produce a compiled ELF binary because iPhone Link is a Python +
