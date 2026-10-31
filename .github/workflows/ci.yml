@@ -1,0 +1,39 @@
+name: CI (Linux)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  linux-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-gi gir1.2-webkit2-4.1 \
+            usbmuxd libimobiledevice6 ifuse
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile all Python files
+        run: python -m compileall -q handset
+
+      - name: Import smoke test
+        run: |
+          python -c "import handset.__main__, handset.main, handset.gui, handset.audio, handset.clipboard, handset.server, handset.device, handset.mux, handset.screen, handset.wifi; print('imports ok')"
+
+      - name: Launcher syntax check
+        run: bash -n run_linux.sh
