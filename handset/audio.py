@@ -184,4 +184,4 @@ def _wpctl_set_volume(percent: int) -> None:
     )
 
 
-linux_audio_manager = LinuxAudioManager()
+audio_manager = LinuxAudioManager()

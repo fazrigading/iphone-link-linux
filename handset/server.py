@@ -57,7 +57,7 @@ from handset.wifi import (
     probe_wifi_device,
     wifi_paired_udids,
 )
-from handset.linux_audio import linux_audio_manager as audio_manager
+from handset.audio import audio_manager
 
 from handset import get_app_root, get_bundle_root
 

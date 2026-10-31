@@ -50,9 +50,9 @@ from handset import get_app_root, get_bundle_root
 from handset.server import HOST, PORT, create_http_server
 
 # Linux UI helpers: Linux clipboard and audio are Linux-only; WindowApi stays in
-# handset/linux_gui.py because it is the Linux pywebview JS bridge for this frontend.
-from handset.linux_clipboard import get_clipboard_text, set_clipboard_text
-from handset.linux_audio import linux_audio_manager
+# handset/gui.py because it is the pywebview JS bridge for this frontend.
+from handset.clipboard import get_clipboard_text, set_clipboard_text
+from handset.audio import audio_manager
 
 _SERVER_PROC = None
 
@@ -89,7 +89,7 @@ def _webview_available() -> bool:
 
 def _spawn_linux_tray_in_background(api):
     try:
-        from handset.linux_gui import _spawn_linux_tray_in_background as _real
+        from handset.gui import _spawn_linux_tray_in_background as _real
 
         return _real(api)
     except Exception:
@@ -179,9 +179,9 @@ def _focus_existing_window_if_running(host: str, port: int) -> bool:
 def _open_linux_window(host: str, port: int) -> None:
     import webview
 
-    # NOTE: Linux frontend uses handset/linux_gui.WindowApi as its JS bridge.
+    # NOTE: Linux frontend uses handset/gui.WindowApi as its JS bridge.
     # If Linux is ever rebased onto handset/gui.py, this is the import to swap.
-    from handset.linux_gui import WindowApi
+    from handset.gui import WindowApi
 
     api = WindowApi(host=host, port=port)
 
@@ -278,7 +278,7 @@ def main() -> None:
         try:
             server.serve_forever()
         finally:
-            linux_audio_manager.shutdown()
+            audio_manager.shutdown()
         return
 
     host = os.environ.get("PANE_HOST", HOST)
@@ -317,5 +317,5 @@ if __name__ == "__main__":
 
 
 def _resolve_webview_storage_path(host: str = "127.0.0.1") -> str:
-    """Linux-main compatibility alias for handset.linux_gui.WindowApi users."""
+    """Compatibility alias for handset.gui.WindowApi users."""
     return _resolve_storage_path_for_host(host)

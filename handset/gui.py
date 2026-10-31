@@ -31,8 +31,8 @@ except Exception:
 
 from handset import get_app_root, get_bundle_root
 from handset.server import HOST, PORT
-from handset.linux_clipboard import get_clipboard_text, set_clipboard_text
-from handset.linux_audio import linux_audio_manager
+from handset.clipboard import get_clipboard_text, set_clipboard_text
+from handset.audio import audio_manager
 from handset.server import load_user_settings, save_user_settings
 
 
@@ -196,7 +196,7 @@ class WindowApi:
 
     def get_tray_menu_state(self) -> dict:
         stealth_on = False
-        audio_on = linux_audio_manager.is_active()
+        audio_on = audio_manager.is_active()
         try:
             data = self._api_get("/api/tray-state", timeout=0.35)
             stealth_on = bool(data.get("stealth"))

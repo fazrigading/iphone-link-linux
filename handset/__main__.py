@@ -33,8 +33,8 @@ def main() -> None:
         server_main()
         return
 
-    from handset.linux_main import main as linux_main
-    linux_main()
+    from handset.main import main as app_main
+    app_main()
 
 
 if __name__ == "__main__":

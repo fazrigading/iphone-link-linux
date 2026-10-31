@@ -194,10 +194,10 @@ Privasi dan kendali data Anda adalah prioritas mutlak iPhone Link:
 - The Linux frontend is a native windowedpywebview app that reuses the same iPhone Link backend and web UI.
 - Linux builds are **source-based for now**: run `./run_linux.sh` from a checkout, or run `python3 -m handset`.
 - Linux-specific helpers live in `handset/`:
-  - `handset/linux_main.py` — Linux entry point
-  - `handset/linux_gui.py` — Linux window + JS bridge
-  - `handset/linux_clipboard.py` — Linux clipboard helpers
-  - `handset/linux_audio.py` — Linux audio manager
+  - `handset/main.py` — entry point
+  - `handset/gui.py` — window + JS bridge
+  - `handset/clipboard.py` — clipboard helpers
+  - `handset/audio.py` — audio manager
 
 ---
 
