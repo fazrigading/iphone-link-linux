@@ -20,17 +20,26 @@
   <img src="https://img.shields.io/badge/Mirroring-60fps%20Hardware%20HEVC-success.svg?style=flat-square" alt="60fps HEVC">
 </p>
 
-> ### 🛡️ Tested & Verified Environment
-> - 📱 **Target Device**: **iPhone 17 Pro** (Physical Device running **iOS 27.0.1**)
-> - 💻 **PC / Operating System**: **Windows 11 Version 26H2** (Build 26100+, 64-bit)
-> - 🐧 **Linux**: **x86_64 desktop** (Python runtime + pywebview window; see Linux notes below)
-> - 🚀 **Performance**: 60fps Zero-Delay Hardware HEVC Stream & Full Touch / OCR Control
+### 🛡️ Tested & Verified Environment
+- 📱 **Target Device**: **iPhone 17 Pro** (Physical Device running **iOS 27.0.1**)
+- 💻 **PC / Operating System**: **Windows 11 Version 26H2** (Build 26100+, 64-bit)
+- 🚀 **Performance**: 60fps Zero-Delay Hardware HEVC Stream & Full Touch / OCR Control
+
+### Tested Linux Environment
+- 🐧 **Linux**: **x86_64 desktop** (Python runtime + pywebview window; see Linux notes below)
+- Tested by **Fazri Gading** (`@fazrigading`) on **Fedora Linux 44 (Workstation Edition)**, kernel `7.2.13-200.fc44.x86_64`,.
+- Test device: **iPhone XS** running **iOS 18.7.11**. 
+- Note: Screen streaming could not be exercised because the stream requires **iOS 27+**; USB device detection, `usbmuxd` integration, and the Linux GUI window were verified.
 
 ---
 
 ### 🌟 Author, Attribution & Open-Source Lineage
-> - **Creator & Lead Developer of iPhone Link**: **Kelvin Daniyar** ([GitHub `@kelvindaniyar`](https://github.com/kelvindaniyar) · [Instagram `@kelvin.daniyar`](https://www.instagram.com/kelvin.daniyar/) · [TikTok `@kelvindaniyar`](https://www.tiktok.com/@kelvindaniyar)).  \n>   Designed and engineered **iPhone Link** (WinUI 3 Liquid Glass Frameless UI, Responsive Compact Top Bar, Mac-Style Stealth Dim Mode 0% with ~25% Calibrated Restore, Remote Wake & Auto-PIN Unlock, Landscape Gaming Mode `Alt+H` with Inverse Touch Matrix, Bidirectional Smart OCR Copy-Paste for Apple Notes & Google Keep, Smart Auto-Clear Cache, and Bluetooth Audio Sink on Windows).
-> - **Upstream Open-Source Source (Forked From)**: Developed from the foundational open-source project [**teyboxv1/pane-iphone-mirror-windows**](https://github.com/teyboxv1/pane-iphone-mirror-windows) by **teyboxv1**, licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  \n>   We gratefully acknowledge and credit **teyboxv1** and the open-source contributors of Pane and **[pymobiledevice3](https://github.com/doronz88/pymobiledevice3)** (by Doron Zavelevsky) for establishing the foundational USB RemoteXPC tunneling mechanism that made native iOS mirroring on Windows possible.
+
+- **Linux Port & Testing Contributor**: **Fazri Gading** ([GitHub `@fazrigading`](https://github.com/fazrigading)) — Linux source-run support, pywebview GTK backend integration, and usbmuxd/udev handling.
+- **Creator & Lead Developer of iPhone Link**: **Kelvin Daniyar** ([GitHub `@kelvindaniyar`](https://github.com/kelvindaniyar) · [Instagram `@kelvin.daniyar`](https://www.instagram.com/kelvin.daniyar/) · [TikTok `@kelvindaniyar`](https://www.tiktok.com/@kelvindaniyar)).
+- Designed and engineered **iPhone Link** (WinUI 3 Liquid Glass Frameless UI, Responsive Compact Top Bar, Mac-Style Stealth Dim Mode 0% with ~25% Calibrated Restore, Remote Wake & Auto-PIN Unlock, Landscape Gaming Mode `Alt+H` with Inverse Touch Matrix, Bidirectional Smart OCR Copy-Paste for Apple Notes & Google Keep, Smart Auto-Clear Cache, and Bluetooth Audio Sink on Windows).
+- **Upstream Open-Source Source (Forked From)**: Developed from the foundational open-source project [**teyboxv1/pane-iphone-mirror-windows**](https://github.com/teyboxv1/pane-iphone-mirror-windows) by **teyboxv1**, licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  
+- We gratefully acknowledge and credit **teyboxv1** and the open-source contributors of Pane and **[pymobiledevice3](https://github.com/doronz88/pymobiledevice3)** (by Doron Zavelevsky) for establishing the foundational USB RemoteXPC tunneling mechanism that made native iOS mirroring on Windows possible.
 
 ---
 
@@ -136,8 +145,8 @@ Before running iPhone Link, you **MUST** enable **Developer Mode** on the iPhone
 ### Option 2: Run from Source (Windows)
 ```powershell
 # 1. Clone repository
-git clone https://github.com/kelvindaniyar/iphone-link.git
-cd iphone-link
+git clone https://github.com/fazrigading/iphone-link-linux.git
+cd iphone-link-linux
 
 # 2. Set up Python virtual environment
 python -m venv venv
@@ -156,8 +165,8 @@ pip install -r requirements.txt
 ### Option 3: Run from Source (Linux)
 ```bash
 # 1. Clone repository
-git clone https://github.com/kelvindaniyar/iphone-link.git
-cd iphone-link
+git clone https://github.com/fazrigading/iphone-link-linux.git
+cd iphone-link-linux
 
 # 2. Set up Python virtual environment
 python3 -m venv venv
@@ -217,7 +226,7 @@ Privasi dan kendali data Anda adalah prioritas mutlak iPhone Link:
 iPhone Link establishes a secure, local-only communication pipeline between your PC and iPhone:
 
 ```
-┌─────────────────┐       USB Cable (RemoteXPC / RSD Tunnel)       ┌────────────────────────┐
+┌─────────────────┐        USB Cable (RemoteXPC / RSD Tunnel)       ┌────────────────────────┐
 │  iPhone Device  │ ◄─────────────────────────────────────────────► │ iPhone Link App        │
 │  (iOS 17 - 27+) │   • 60fps HEVC Video Stream (Port 62078)        │ (In-Process GUI+Server)│
 └─────────────────┘   • Direct HID Multi-Touch & Keystrokes         │ • 127.0.0.1:8765 HTTP  │
