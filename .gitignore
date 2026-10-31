@@ -1,38 +1,27 @@
+# Python
 __pycache__/
 *.py[cod]
+*.egg-info/
+
+# Virtual environments
+.venv/
+
+# Build / release artifacts
 build/
 dist/
 release/
-*.log
-.playwright-mcp/
-.venv/
-venv/
-.vscode/
-.idea/
-*.plist
-*.pairrecord
-pair_records/
-*.egg-info/
-scratch/
-.pane_webview_storage/
+packaging/
 *.zip
 
-# Debug, OCR Temporary artifacts & Personal state files
-debug_ocr_*
+# Editor / IDE
+.vscode/
+.idea/
+
+# Runtime state & logs
+*.log
+.pane_webview_storage/
+.audio_worker.pid
 debug_metrics.json
 typed_history.json
 user_settings.json
 wifi_state.json
-.audio_worker.pid
-
-# Development Reports & Packaging
-LAPORAN_PENGEMBANGAN/
-LAPORAN_*.md
-packaging/
-*.egg-info/
-
-iphone-link.log
-.projectmem/events.jsonl
-.projectmem/watch.pid
-.projectmem/watch.log
-.projectmem/structure.json
