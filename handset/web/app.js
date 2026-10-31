@@ -1301,7 +1301,14 @@ function renderDevices(list) {
     name.textContent = device.udid.slice(0, 8) + "…";
     const meta = document.createElement("span");
     meta.className = "device-meta";
-    meta.textContent = device.connection || "USB";
+    let metaText = device.connection || "USB";
+    if (device.iosVersion) {
+      metaText += ` · iOS ${device.iosVersion}`;
+      if (device.streamSupported === false) {
+        metaText += " (screen streaming needs iOS 27+)";
+      }
+    }
+    meta.textContent = metaText;
     button.append(name, meta);
     button.addEventListener("click", () => {
       selectedUdid = device.udid;

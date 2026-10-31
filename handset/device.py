@@ -134,6 +134,20 @@ def snapshot() -> dict:
     _prune_disconnected_udids(active_udids, usb_udids)
 
     developer_mode = developer_mode_enabled(devices[0]["udid"]) if len(devices) == 1 else None
+
+    # Attach cached iOS version + stream support so the UI can warn before attempting to mirror.
+    for d in devices:
+        version = None
+        try:
+            version = get_device_ios_version(str(d.get("udid") or ""))
+        except Exception:
+            version = None
+        d["iosVersion"] = version
+        try:
+            d["streamSupported"] = (version is not None and _version_at_least(version, "27.0"))
+        except Exception:
+            d["streamSupported"] = None
+
     return {
         "library": {"ready": True, "version": "usbmux"},
         "driver": driver,
@@ -183,6 +197,38 @@ def _lockdown_error(code: str) -> str:
         "PasswordProtected": "Unlock the iPhone and try again.",
     }
     return messages.get(code, code)
+
+
+def _version_at_least(version: str, minimum: str) -> bool:
+    try:
+        from packaging.version import Version
+        return Version(version) >= Version(minimum)
+    except Exception:
+        try:
+            return tuple(int(x) for x in version.split(".")[:2]) >= tuple(int(x) for x in minimum.split(".")[:2])
+        except Exception:
+            return False
+
+
+def get_device_ios_version(udid: str) -> str | None:
+    if not udid:
+        return None
+    with _DEVICE_CACHE_LOCK:
+        cached = _HANDSET_METADATA_CACHE.get(udid)
+        if cached and isinstance(cached.get("info"), dict):
+            version = cached["info"].get("ProductVersion")
+            if version:
+                return str(version)
+    try:
+        payload = read_handset(udid)
+        info = payload.get("info") if isinstance(payload, dict) else None
+        if isinstance(info, dict):
+            version = info.get("ProductVersion")
+            if version:
+                return str(version)
+    except Exception:
+        return None
+    return None
 
 
 def developer_mode_enabled(udid: str) -> bool | None:
