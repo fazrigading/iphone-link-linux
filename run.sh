@@ -21,7 +21,7 @@ done
 
 if [ "$VERBOSE" = "1" ]; then
   export PANE_VERBOSE=1
-  echo "iPhone Link: VERBOSE mode — backend logs -> $SCRIPT_DIR/iphone-link.log" >&2
+  echo "iPhone Link: VERBOSE mode — backend logs -> ${XDG_STATE_HOME:-$HOME/.local/state}/iphone-link/iphone-link.log" >&2
 fi
 
 if command -v python3 >/dev/null 2>&1; then

@@ -7,4 +7,4 @@ run:
 	./run.sh
 
 clean:
-	rm -rf .venv iphone-link.log
+	rm -rf .venv

@@ -17,11 +17,4 @@ packaging/
 .vscode/
 .idea/
 
-# Runtime state & logs
-*.log
-.pane_webview_storage/
-.audio_worker.pid
-debug_metrics.json
-typed_history.json
-user_settings.json
-wifi_state.json
+

@@ -42,6 +42,19 @@ def get_user_cache_dir() -> Path:
     return d
 
 
+def get_user_state_dir() -> Path:
+    """Return a per-user writable directory for logs/state (XDG on Linux)."""
+    import os
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    base = os.environ.get("XDG_STATE_HOME")
+    if not base:
+        base = str(Path.home() / ".local" / "state")
+    d = Path(base) / "iphone-link"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 # Tahap 58: Prefer native C extensions (pylzss / lzfse .pyd) at all times.
 # Only append pure-Python _shims at the very end of sys.path if native C import genuinely raises ImportError.
 try:
