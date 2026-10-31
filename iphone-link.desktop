@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=iPhone Link
+Comment=Native iPhone mirroring and control (Linux source build)
+Exec=/absolute/path/to/iphone-link/run_linux.sh
+Icon=/absolute/path/to/iphone-link/assets/iphone_link.png
+Terminal=false
+Categories=Utility;
