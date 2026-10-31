@@ -4,9 +4,25 @@ set -euo pipefail
 # iPhone Link — Linux launcher
 # This script launches iPhone Link from a source checkout.
 # For a standalone frozen build, run the frozen executable instead.
+#
+# Usage:
+#   ./run_linux.sh                # normal launch
+#   ./run_linux.sh --verbose      # verbose: keep backend logs in ./iphone-link.log
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+
+VERBOSE=0
+for arg in "$@"; do
+  case "$arg" in
+    --verbose|-v) VERBOSE=1 ;;
+  esac
+done
+
+if [ "$VERBOSE" = "1" ]; then
+  export PANE_VERBOSE=1
+  echo "iPhone Link: VERBOSE mode — backend logs -> $SCRIPT_DIR/iphone-link.log" >&2
+fi
 
 if command -v python3 >/dev/null 2>&1; then
   PYTHON=python3

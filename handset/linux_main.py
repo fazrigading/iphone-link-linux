@@ -101,13 +101,24 @@ def _start_backend_server(host: str, port: int, timeout: float = 10.0) -> bool:
     child_env["PANE_HOST"] = host
     child_env["PANE_PORT"] = str(port)
 
+    if os.environ.get("PANE_VERBOSE"):
+        log_path = get_app_root() / "iphone-link.log"
+        log_file = open(log_path, "a", buffering=1)
+        log_file.write(f"\n===== backend start {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
+        log_file.flush()
+        stdout_target = log_file
+        stderr_target = subprocess.STDOUT
+    else:
+        stdout_target = subprocess.DEVNULL
+        stderr_target = subprocess.DEVNULL
+
     proc = subprocess.Popen(
         cmd,
         cwd=str(get_app_root()),
         env=child_env,
         stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=stdout_target,
+        stderr=stderr_target,
     )
 
     start = time.time()
