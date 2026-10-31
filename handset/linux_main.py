@@ -40,6 +40,8 @@ from handset.server import HOST, PORT, create_http_server
 from handset.linux_clipboard import get_clipboard_text, set_clipboard_text
 from handset.linux_audio import linux_audio_manager
 
+_SERVER_PROC = None
+
 
 def _resolve_web_root() -> Path:
     for cand in (
@@ -112,6 +114,7 @@ def _start_backend_server(host: str, port: int, timeout: float = 10.0) -> bool:
         stdout_target = subprocess.DEVNULL
         stderr_target = subprocess.DEVNULL
 
+    global _SERVER_PROC
     proc = subprocess.Popen(
         cmd,
         cwd=str(get_app_root()),
@@ -120,6 +123,7 @@ def _start_backend_server(host: str, port: int, timeout: float = 10.0) -> bool:
         stdout=stdout_target,
         stderr=stderr_target,
     )
+    _SERVER_PROC = proc
 
     start = time.time()
     while time.time() - start < timeout:
@@ -266,18 +270,32 @@ def main() -> None:
     host = os.environ.get("PANE_HOST", HOST)
     port = int(os.environ.get("PANE_PORT", PORT))
 
-    if _focus_existing_window_if_running(host, port):
-        return
+    try:
+        if _focus_existing_window_if_running(host, port):
+            return
 
-    if not _start_backend_server(host, port, timeout=10.0):
-        print("iPhone Link: failed to start backend server", file=sys.stderr)
-        raise SystemExit(2)
+        if not _start_backend_server(host, port, timeout=10.0):
+            print("iPhone Link: failed to start backend server", file=sys.stderr)
+            raise SystemExit(2)
 
-    if not _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
+        if not _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
+            _open_linux_window(host, port)
+            return
+
         _open_linux_window(host, port)
-        return
-
-    _open_linux_window(host, port)
+    finally:
+        global _SERVER_PROC
+        if _SERVER_PROC is not None and _SERVER_PROC.poll() is None:
+            try:
+                _SERVER_PROC.terminate()
+                _SERVER_PROC.wait(timeout=3.0)
+            except Exception:
+                try:
+                    _SERVER_PROC.kill()
+                except Exception:
+                    pass
+        import os as _os
+        _os._exit(0)
 
 
 if __name__ == "__main__":
