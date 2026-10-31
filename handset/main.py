@@ -46,7 +46,7 @@ except Exception as _gi_err:
     )
     raise SystemExit(2)
 
-from handset import get_app_root, get_bundle_root
+from handset import get_app_root, get_bundle_root, get_user_cache_dir
 from handset.server import HOST, PORT, create_http_server
 
 # Linux UI helpers: Linux clipboard and audio are Linux-only; WindowApi stays in
@@ -255,7 +255,7 @@ def _resolve_storage_path(host: str = "127.0.0.1") -> str:
 
 def _resolve_storage_path_for_host(host: str) -> str:
     host_slot = host.replace(":", "_")
-    local_dir = get_app_root() / ".pane_webview_storage" / host_slot
+    local_dir = get_user_cache_dir() / "webview_storage" / host_slot
     try:
         local_dir.mkdir(parents=True, exist_ok=True)
         return str(local_dir)
@@ -265,7 +265,7 @@ def _resolve_storage_path_for_host(host: str) -> str:
         folder_id = hashlib.sha256(
             os.path.normcase(str(get_app_root().resolve())).encode("utf-8")
         ).hexdigest()[:12]
-        fallback = Path.home() / ".pane_webview_storage_instances" / f"{folder_id}_{host_slot}"
+        fallback = get_user_cache_dir() / "webview_storage_instances" / f"{folder_id}_{host_slot}"
         fallback.mkdir(parents=True, exist_ok=True)
         return str(fallback)
 

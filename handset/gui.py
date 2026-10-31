@@ -29,7 +29,7 @@ except Exception:
     if os.path.isdir("/usr/lib/python3/dist-packages") and "/usr/lib/python3/dist-packages" not in sys.path:
         sys.path.append("/usr/lib/python3/dist-packages")
 
-from handset import get_app_root, get_bundle_root
+from handset import get_app_root, get_bundle_root, get_user_cache_dir
 from handset.server import HOST, PORT
 from handset.clipboard import get_clipboard_text, set_clipboard_text
 from handset.audio import audio_manager
@@ -412,7 +412,7 @@ def _open_window(host: str, port: int) -> None:
 
 
 def _resolve_webview_storage_path() -> str:
-    local_dir = get_app_root() / ".pane_webview_storage"
+    local_dir = get_user_cache_dir() / "webview_storage"
     try:
         local_dir.mkdir(parents=True, exist_ok=True)
         return str(local_dir)
@@ -422,7 +422,7 @@ def _resolve_webview_storage_path() -> str:
         folder_id = hashlib.sha256(
             os.path.normcase(str(get_app_root().resolve())).encode("utf-8")
         ).hexdigest()[:12]
-        fallback = Path.home() / ".pane_webview_storage_instances" / folder_id
+        fallback = get_user_cache_dir() / "webview_storage_instances" / folder_id
         fallback.mkdir(parents=True, exist_ok=True)
         return str(fallback)
 

@@ -7,4 +7,4 @@ run:
 	./run.sh
 
 clean:
-	rm -rf .venv venv iphone-link.log .pane_webview_storage
+	rm -rf .venv iphone-link.log
