@@ -6,7 +6,7 @@ __pycache__/
 # Virtual environments
 .venv/
 
-# Build / release artifacts (standard Python)
+# Build / release artifacts
 build/
 dist/
 *.zip
@@ -14,5 +14,3 @@ dist/
 # Editor / IDE
 .vscode/
 .idea/
-
-

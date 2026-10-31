@@ -41,6 +41,7 @@ except Exception as _gi_err:
         "iPhone Link: missing Linux system dependency PyGObject/WebKit2GTK.\n"
         "  Fedora:   sudo dnf install python3-gobject webkit2gtk4.1\n"
         "  Debian:   sudo apt install python3-gi gir1.2-webkit2-4.1\n"
+        "  Arch:     sudo pacman -S python-gobject webkit2gtk\n"
         f"  (import error: {_gi_err})",
         file=sys.stderr,
     )

@@ -55,6 +55,7 @@ if ! command -v usbmuxd >/dev/null 2>&1; then
   echo "iPhone Link: usbmuxd not found. Install it:" >&2
   echo "  Fedora: sudo dnf install usbmuxd libimobiledevice ifuse" >&2
   echo "  Debian: sudo apt install usbmuxd libimobiledevice6 ifuse" >&2
+  echo "  Arch:   sudo pacman -S usbmuxd libimobiledevice ifuse" >&2
   exit 1
 fi
 

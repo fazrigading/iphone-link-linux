@@ -172,6 +172,8 @@ Linux (source run) also needs the system packages that pip cannot install:
 sudo dnf install python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice ifuse xclip wl-clipboard
 # Debian / Ubuntu
 sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse xclip wl-clipboard
+# Arch Linux
+sudo pacman -S python-gobject webkit2gtk usbmuxd libimobiledevice ifuse xclip wl-clipboard
 ```
 iPhone Link uses pywebview's GTK backend on Linux, which depends on the system PyGObject + WebKit2GTK.
 
