@@ -964,8 +964,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 class SingleServer(ThreadingHTTPServer):
-    # On Windows, address reuse lets a second copy bind the same port and steal requests.
-    allow_reuse_address = False
+    # Allow rebinding after a previous instance exits (avoids TIME_WAIT bind failures on restart).
+    # Duplicate-copy protection is handled by the launcher's _focus_existing_window_if_running check.
+    allow_reuse_address = True
 
 
 def create_http_server(host: str = HOST, port: int = PORT) -> SingleServer:
