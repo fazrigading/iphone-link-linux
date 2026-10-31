@@ -12,7 +12,7 @@ requires-python = ">=3.9"
 dependencies = [
     "pymobiledevice3>=11.28",
     "pywebview>=5.0",
-    "pycaw>=20230407",
+    "pycaw>=20230407",  # Windows-only audio: only referenced on Windows
 ]
 
 [tool.setuptools.packages.find]

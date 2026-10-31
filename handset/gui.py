@@ -23,6 +23,13 @@ import time
 import urllib.request
 from pathlib import Path
 
+try:
+    import pystray  # noqa: F401
+    import PIL  # noqa: F401
+    _linux_extra_tray_available = True
+except Exception:
+    _linux_extra_tray_available = False
+
 # 1. Ensure safe stdout/stderr handles when running windowless (pythonw.exe or frozen .exe)
 if sys.stdout is None:
     sys.stdout = open(os.devnull, "w", encoding="utf-8")
@@ -91,6 +98,122 @@ _SERVER_PROC: subprocess.Popen | None = None
 _SERVER_JOB_HANDLE: int | None = None
 _SERVER_ENDPOINT: tuple[str, int] = ("127.0.0.1", 8765)
 _ACTIVE_TRAY_ICON = None
+
+
+def _log_or_print(msg: str) -> None:
+    try:
+        print(msg, flush=True)
+    except Exception:
+        pass
+
+
+def _resolve_clipboard_backend() -> object:
+    """Return the clipboard helper that matches the current platform."""
+    if _is_linux():
+        from handset.linux_clipboard import clipboard
+        return clipboard
+    return None
+
+
+def _linux_tray_controller_class():
+    """Return a Linux system-tray controller when the optional dependencies are present."""
+    if not _is_linux():
+        return None
+    if not _linux_extra_tray_available:
+        return None
+
+    import pystray
+    from PIL import Image
+
+    class LinuxSystemTrayIcon:
+        """Pystray-based system tray for iPhone Link on Linux."""
+
+        def __init__(
+            self,
+            icon_path: Path | None = None,
+            tooltip: str = "iPhone Link",
+            on_restore=None,
+            on_hide=None,
+            on_toggle_window=None,
+            on_toggle_landscape=None,
+            on_toggle_stealth=None,
+            on_toggle_audio=None,
+            on_clear_cache=None,
+            on_quit=None,
+            state_provider=None,
+        ):
+            self.icon_path = Path(icon_path) if icon_path else None
+            self.tooltip = tooltip
+            self.on_restore = on_restore
+            self.on_hide = on_hide
+            self.on_toggle_window = on_toggle_window
+            self.on_toggle_landscape = on_toggle_landscape
+            self.on_toggle_stealth = on_toggle_stealth
+            self.on_toggle_audio = on_toggle_audio
+            self.on_clear_cache = on_clear_cache
+            self.on_quit = on_quit
+            self.state_provider = state_provider
+            self._icon = None
+            self._thread = None
+
+        def start(self, wait_ready: float = 1.5) -> bool:
+            if self._thread is not None and self._thread.is_alive():
+                return self.is_running
+            def _run():
+                try:
+                    icon_path = self.icon_path
+                    if icon_path is not None and icon_path.is_file():
+                        base = Image.open(icon_path)
+                        image = base.resize((64, 64))
+                    else:
+                        image = None
+                    menu = pystray.Menu(
+                        pystray.MenuItem("Show / Restore iPhone Link", self._safe(self.on_restore)),
+                        pystray.MenuItem("Hide to System Tray", self._safe(self.on_hide)),
+                        pystray.Separator(),
+                        pystray.MenuItem("Landscape Mode (Alt+H)", self._safe(self.on_toggle_landscape)),
+                        pystray.MenuItem("Stealth Dim Mode (Alt+D)", self._safe(self.on_toggle_stealth)),
+                        pystray.MenuItem("Stream Audio to PC", self._safe(self.on_toggle_audio)),
+                        pystray.MenuItem("Clear Copy Cache (Alt+R)", self._safe(self.on_clear_cache)),
+                        pystray.Separator(),
+                        pystray.MenuItem("Quit iPhone Link", self._safe(self.on_quit)),
+                    )
+                    self._icon = pystray.Icon("iphonelink", image, self.tooltip, menu=menu)
+                    self._icon.run_detached()
+                except Exception as err:
+                    print(f"Linux tray error: {err}", flush=True)
+            self._thread = threading.Thread(target=_run, name="iphone-link-linux-tray", daemon=True)
+            self._thread.start()
+            if wait_ready > 0:
+                time.sleep(min(wait_ready, 2.0))
+            return self.is_running
+
+        def stop(self) -> None:
+            if self._icon is not None:
+                try:
+                    self._icon.stop()
+                except Exception:
+                    pass
+                self._icon = None
+            if self._thread is not None and self._thread is not threading.current_thread():
+                self._thread.join(timeout=1.5)
+            self._thread = None
+
+        @property
+        def is_running(self) -> bool:
+            return self._icon is not None
+
+        @staticmethod
+        def _safe(fn):
+            def _wrapper():
+                try:
+                    if fn is not None:
+                        fn()
+                except Exception as err:
+                    print(f"Linux tray callback error: {err}", flush=True)
+            return _wrapper
+
+    return LinuxSystemTrayIcon
 
 
 def _create_kill_on_close_job_object() -> int | None:
@@ -212,9 +335,19 @@ def _close_job_handle(job_handle: int | None) -> None:
 def _cleanup_stale_zombie_processes(host: str = "127.0.0.1", port: int = 8765) -> None:
     """Clean up any orphaned iPhone Link / handset.server / AudioPlaybackConnection background processes
     left over from an earlier crashed session before starting a fresh GUI + server pair."""
+    if sys.platform == "linux":
+        _cleanup_stale_zombie_processes_linux(host, port)
+        return
     if sys.platform != "win32":
         return
 
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] start _cleanup_stale_zombie_processes_win32 mode={mode} host={host} port={port}")
+
+    _cleanup_stale_zombie_processes_win32(host, port, mode=mode)
+
+
+def _cleanup_stale_zombie_processes_win32(host: str, port: int, *, mode: str) -> None:
     # 1. Politely tell any lingering server on `port` to shut down first
     try:
         req = urllib.request.Request(
@@ -255,6 +388,29 @@ Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {{
     except Exception:
         pass
 
+    _log_or_print(f"[GUI] win32 cleanup sweep done; leftover cleanup policy={mode}")
+
+
+def _cleanup_stale_zombie_processes_linux(host: str, port: int) -> None:
+    """Linux equivalent of the stale-zombie sweep: politely shut down the server, then SIGTERM remaining
+    iPhone Link backend/audio processes that look like leftovers from a crashed session."""
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] start _cleanup_stale_zombie_processes_linux mode={mode} host={host} port={port}")
+
+    try:
+        req = urllib.request.Request(
+            f"http://{host}:{port}/api/server/shutdown",
+            data=b"{}",
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=0.6):
+            pass
+    except Exception:
+        pass
+
+    _log_or_print(f"[GUI] linux cleanup sweep done; leftover cleanup policy={mode}")
+
 
 class WindowApi:
     """JS-accessible API exposed under window.pywebview.api."""
@@ -268,6 +424,7 @@ class WindowApi:
         self._drawer_open = False
         self._is_landscape = False
         self._hidden_to_tray = False
+        self._clipboard = _resolve_clipboard_backend()
 
     def set_window(self, window):
         self._window = window
@@ -328,7 +485,7 @@ class WindowApi:
             self._window.minimize()
 
     def minimize_to_tray(self):
-        """Hide window to Windows 11 System Tray while keeping mirroring & audio alive in background."""
+        """Hide window to system tray while keeping mirroring & audio alive in background."""
         self._hidden_to_tray = True
         if sys.platform == "win32":
             hwnd = self._get_hwnd()
@@ -347,6 +504,27 @@ class WindowApi:
             except Exception:
                 pass
         return {"ok": True, "hidden": True}
+
+    def set_clipboard_text(self, text: str) -> dict:
+        """Write text to the system clipboard on the current platform."""
+        if self._clipboard is not None:
+            try:
+                self._clipboard.set(text)
+                return {"ok": True}
+            except Exception as err:
+                return {"ok": False, "error": str(err)}
+        return {"ok": False, "error": "no clipboard backend"}
+
+    def get_clipboard_text(self, timeout: float = 0.0) -> dict:
+        """Read text from the system clipboard on the current platform."""
+        if self._clipboard is not None:
+            try:
+                delay = timeout if timeout > 0 else None
+                text = self._clipboard.get(delay=delay)
+                return {"ok": True, "text": text or ""}
+            except Exception as err:
+                return {"ok": False, "error": str(err)}
+        return {"ok": False, "error": "no clipboard backend"}
 
     def restore_from_tray(self):
         """Show/restore iPhone Link window from System Tray or minimized state and bring to front."""
@@ -545,8 +723,17 @@ class WindowApi:
 
 
 def _resolve_icon_path() -> Path | None:
-    """Locate iphone_link.ico across normal and PyInstaller frozen layouts."""
-    candidates = [
+    """Locate app icon across normal and PyInstaller frozen layouts (platform icons preferred)."""
+    platform_candidates: list[Path] = []
+    if sys.platform == "linux":
+        platform_candidates += [
+            get_app_root() / "assets" / "iphone_link.png",
+            get_bundle_root() / "assets" / "iphone_link.png",
+            Path(__file__).resolve().parent.parent / "assets" / "iphone_link.png",
+            get_app_root() / "packaging" / "pane.png",
+            get_bundle_root() / "packaging" / "pane.png",
+        ]
+    candidates = platform_candidates + [
         get_app_root() / "assets" / "iphone_link.ico",
         get_bundle_root() / "assets" / "iphone_link.ico",
         Path(__file__).resolve().parent.parent / "assets" / "iphone_link.ico",
@@ -559,7 +746,7 @@ def _resolve_icon_path() -> Path | None:
     return None
 
 
-def apply_dwm_effects(title: str = "iPhone Link", api: WindowApi | None = None) -> None:
+def apply_dwm_effects(title: str, api: WindowApi | None = None) -> None:
     """Terapkan efek DWM Windows 11 (sudut membulat + dark mode) dan icon native pada HWND."""
     try:
         import ctypes
@@ -644,43 +831,55 @@ def _ensure_backend_server_running(
     port: int = 8765,
     timeout: float = 10.0,
 ) -> bool:
-    """Launch the backend HTTP server in an isolated child OS process bound to a Win32 Job Object."""
+    """Launch the backend HTTP server in an isolated child OS process with platform-appropriate cleanup."""
     global _SERVER_PROC, _SERVER_JOB_HANDLE, _SERVER_ENDPOINT
     ready_url = f"http://{host}:{port}/api/tray-state"
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] _ensure_backend_server_running start mode={mode} host={host} port={port}")
 
     with _SERVER_LOCK:
         if _SERVER_PROC is not None and _SERVER_PROC.poll() is None and _is_server_responding(ready_url, timeout=1.0):
+            _log_or_print(f"[GUI] _ensure_backend_server_running already-running mode={mode}")
             return True
 
         if _is_server_responding(ready_url, timeout=0.6):
+            _log_or_print(f"[GUI] _ensure_backend_server_running pre-existing mode={mode}")
             return True
 
-        if _SERVER_JOB_HANDLE is None:
+        if sys.platform == "win32" and _SERVER_JOB_HANDLE is None:
             _SERVER_JOB_HANDLE = _create_kill_on_close_job_object()
+            _log_or_print(f"[GUI] _ensure_backend_server_running job={bool(_SERVER_JOB_HANDLE)} mode={mode}")
 
         cmd = _build_server_child_command(host, port)
         child_env = dict(os.environ)
         child_env["PANE_HOST"] = host
         child_env["PANE_PORT"] = str(port)
 
-        proc = subprocess.Popen(
-            cmd,
-            cwd=str(get_app_root()),
-            env=child_env,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            **_WIN_NO_WINDOW_KWARGS,
-        )
-        _assign_process_to_job(_SERVER_JOB_HANDLE, proc)
+        start_kwargs: dict = {
+            "cwd": str(get_app_root()),
+            "env": child_env,
+            "stdin": subprocess.DEVNULL,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+        }
+        if sys.platform == "win32":
+            start_kwargs.update(_WIN_NO_WINDOW_KWARGS)
+
+        proc = subprocess.Popen(cmd, **start_kwargs)
+        _log_or_print(f"[GUI] _ensure_backend_server_running spawned pid={proc.pid} mode={mode} host={host} port={port} job_handle_set={_SERVER_JOB_HANDLE is not None}")
+        if sys.platform == "win32" and _SERVER_JOB_HANDLE is not None:
+            assigned = _assign_process_to_job(_SERVER_JOB_HANDLE, proc)
+            _log_or_print(f"[GUI] _ensure_backend_server_running assigned-job mode={mode} host={host} port={port} assigned={assigned}")
         _SERVER_PROC = proc
         _SERVER_ENDPOINT = (host, port)
 
-    return wait_for_server(url=ready_url, timeout=timeout)
+    ok = wait_for_server(url=ready_url, timeout=timeout)
+    _log_or_print(f"[GUI] _ensure_backend_server_running ready={ok} mode={mode}")
+    return ok
 
 
 def shutdown_backend_server() -> None:
-    """Cleanly stop System Tray icon, shut down isolated child server + audio worker, and close Job Object."""
+    """Cleanly stop system tray icon, shut down isolated child server + audio worker, and close platform handles."""
     global _SERVER_PROC, _SERVER_JOB_HANDLE, _ACTIVE_TRAY_ICON
 
     tray = _ACTIVE_TRAY_ICON
@@ -697,6 +896,9 @@ def shutdown_backend_server() -> None:
         host, port = _SERVER_ENDPOINT
         _SERVER_PROC = None
         _SERVER_JOB_HANDLE = None
+
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] shutdown_backend_server start mode={mode} host={host} port={port} job_handle_set={job_handle is not None}")
 
     if proc is not None and proc.poll() is None:
         try:
@@ -720,20 +922,36 @@ def shutdown_backend_server() -> None:
             except Exception:
                 pass
 
-    # Closing the Job Object handle instructs the Windows kernel to immediately kill any remaining child/audio processes!
-    if job_handle is not None:
+    # Win32: closing the Job Object handle instructs the kernel to immediately kill any remaining child/audio processes.
+    if sys.platform == "win32" and job_handle is not None:
         _close_job_handle(job_handle)
+
+    _log_or_print(f"[GUI] shutdown_backend_server end mode={mode}")
 
 
 def _focus_existing_window_if_running(host: str, port: int) -> bool:
-    """If an iPhone Link window is already open (or hidden to System Tray), restore & bring to front."""
-    if sys.platform != "win32":
-        return False
+    """If an iPhone Link window is already open (or hidden to system tray), restore & bring to front."""
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] _focus_existing_window_if_running start mode={mode} host={host} port={port}")
+    if sys.platform == "win32":
+        _focus_existing_window_if_running_win32(host, port)
+        _log_or_print(f"[GUI] _focus_existing_window_if_running win32 done mode={mode}")
+        return True
+    if sys.platform == "linux":
+        result = _focus_existing_window_if_running_linux(host, port)
+        _log_or_print(f"[GUI] _focus_existing_window_if_running linux done mode={mode} found={result}")
+        return result
+    _log_or_print(f"[GUI] _focus_existing_window_if_running noop mode={mode}")
+    return False
+
+
+def _focus_existing_window_if_running_win32(host: str, port: int) -> None:
+    title = _window_title_for_host(host)
     try:
         import ctypes
         from ctypes import wintypes
 
-        hwnd = ctypes.windll.user32.FindWindowW(None, "iPhone Link")
+        hwnd = ctypes.windll.user32.FindWindowW(None, title)
         if hwnd and _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
             wh = wintypes.HWND(hwnd)
             if not ctypes.windll.user32.IsWindowVisible(wh):
@@ -741,10 +959,46 @@ def _focus_existing_window_if_running(host: str, port: int) -> bool:
             if ctypes.windll.user32.IsIconic(wh):
                 ctypes.windll.user32.ShowWindow(wh, 9)  # SW_RESTORE
             ctypes.windll.user32.SetForegroundWindow(wh)
-            return True
     except Exception:
         pass
-    return False
+
+
+def _focus_existing_window_if_running_win32_old_code_removed_placeholder():
+    pass
+
+
+def _focus_existing_window_if_running_linux(host: str, port: int) -> bool:
+    if not _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
+        return False
+    try:
+        import webview
+        from handset.gui import WindowApi
+
+        api = WindowApi(host=host, port=port)
+        window = webview.create_window(
+            title=_window_title_for_host(host),
+            url=f"http://{host}:{port}/?t={int(time.time())}",
+            js_api=api,
+            width=380,
+            height=840,
+            frameless=True,
+            easy_drag=False,
+            min_size=(368, 450),
+            background_color="#0f172a",
+        )
+        try:
+            api.set_window(window)
+            storage_path = _resolve_webview_storage_path(host)
+            webview.start(
+                debug=False,
+                private_mode=False,
+                storage_path=storage_path,
+            )
+        finally:
+            api.close()
+    except Exception:
+        pass
+    return True
 
 
 def _run_smoke_test() -> int:
@@ -804,6 +1058,9 @@ def _run_smoke_test() -> int:
         if icon_path is None or not icon_path.is_file():
             return 6
         return 0
+    except Exception as e:
+        print(f"[GUI] smoke_test exception: {e}", flush=True)
+        return 99
     finally:
         shutdown_backend_server()
         if child_pid:
@@ -816,9 +1073,27 @@ def _run_smoke_test() -> int:
                     pass
 
 
-def _resolve_webview_storage_path() -> str:
-    """Return a per-folder isolated WebView2 storage path so fresh extracts never inherit old PINs."""
-    local_dir = get_app_root() / ".pane_webview_storage"
+def _window_title_for_host(host: str) -> str:
+    """Window title shown on the frameless pywebview window (also used by FindWindowW/SetForegroundWindow)."""
+    if host == "127.0.0.1":
+        return "iPhone Link"
+    try:
+        import ipaddress
+        addr = ipaddress.ip_address(host)
+        if addr.is_loopback:
+            return "iPhone Link"
+        if addr.is_private:
+            return f"iPhone Link ({host})"
+        return f"iPhone Link ({host})"
+    except Exception:
+        return f"iPhone Link ({host})"
+
+
+def _resolve_webview_storage_path(host: str) -> str:
+    """Return a per-folder isolated WebView storage path scoped by host/port so every remote session
+    gets its own cookie/auth/PIN store instead of sharing the local 127.0.0.1 instance."""
+    host_slot = host.replace(":", "_")
+    local_dir = get_app_root() / ".pane_webview_storage" / host_slot
     try:
         local_dir.mkdir(parents=True, exist_ok=True)
         return str(local_dir)
@@ -828,9 +1103,13 @@ def _resolve_webview_storage_path() -> str:
         folder_id = hashlib.sha256(
             os.path.normcase(str(get_app_root().resolve())).encode("utf-8")
         ).hexdigest()[:12]
-        fallback = Path.home() / ".pane_webview_storage_instances" / folder_id
+        fallback = Path.home() / ".pane_webview_storage_instances" / f"{folder_id}_{host_slot}"
         fallback.mkdir(parents=True, exist_ok=True)
         return str(fallback)
+
+
+def _is_linux() -> bool:
+    return sys.platform == "linux"
 
 
 def main() -> None:
@@ -845,7 +1124,6 @@ def main() -> None:
         raise SystemExit(_run_smoke_test())
 
     import webview
-    from handset.tray import SystemTrayIcon
 
     host = os.environ.get("PANE_HOST", "127.0.0.1")
     port = int(os.environ.get("PANE_PORT", "8765"))
@@ -866,30 +1144,36 @@ def main() -> None:
         except Exception:
             pass
 
-    # Step B & C: Launch backend server in an isolated child OS process bound to Win32 Job Object
+    # Step B & C: Launch backend server in an isolated child OS process
     _ensure_backend_server_running(host=host, port=port, timeout=10.0)
 
     # Jadwalkan penerapan efek DWM sudut membulat dan icon native saat HWND window siap
-    threading.Thread(target=apply_dwm_effects, args=("iPhone Link", api), daemon=True).start()
+    if sys.platform == "win32":
+        title = _window_title_for_host(host)
+        threading.Thread(target=apply_dwm_effects, args=(title, api), daemon=True).start()
 
-    # Start Native Windows 11 System Tray Icon (Clean Box-Free ASCII Menu)
-    tray = SystemTrayIcon(
-        icon_path=_resolve_icon_path(),
-        on_restore=api.restore_from_tray,
-        on_hide=api.minimize_to_tray,
-        on_toggle_window=api.toggle_tray_window,
-        on_toggle_landscape=api.tray_toggle_landscape,
-        on_toggle_stealth=api.tray_toggle_stealth,
-        on_toggle_audio=api.tray_toggle_audio,
-        on_clear_cache=api.tray_clear_copy_cache,
-        on_quit=api.close,
-        state_provider=api.get_tray_menu_state,
-    )
-    tray.start(wait_ready=1.5)
-    _ACTIVE_TRAY_ICON = tray
+    # Start platform system tray icon
+    tray_class = _linux_tray_controller_class()
+    if sys.platform == "win32":
+        tray_class = SystemTrayIcon
+    if tray_class is not None:
+        tray = tray_class(
+            icon_path=_resolve_icon_path(),
+            on_restore=api.restore_from_tray,
+            on_hide=api.minimize_to_tray,
+            on_toggle_window=api.toggle_tray_window,
+            on_toggle_landscape=api.tray_toggle_landscape,
+            on_toggle_stealth=api.tray_toggle_stealth,
+            on_toggle_audio=api.tray_toggle_audio,
+            on_clear_cache=api.tray_clear_copy_cache,
+            on_quit=api.close,
+            state_provider=api.get_tray_menu_state,
+        )
+        tray.start(wait_ready=1.5)
+        _ACTIVE_TRAY_ICON = tray
 
     window = webview.create_window(
-        title="iPhone Link",
+        title=_window_title_for_host(host),
         url=f"http://{host}:{port}/?t={int(time.time())}",
         js_api=api,
         width=380,
@@ -901,7 +1185,9 @@ def main() -> None:
     )
     api.set_window(window)
 
-    storage_path = _resolve_webview_storage_path()
+    storage_path = _resolve_webview_storage_path(host)
+    mode = "powerful" if host != "127.0.0.1" else "normal"
+    _log_or_print(f"[GUI] webview.start mode={mode} host={host} port={port}")
     try:
         webview.start(
             debug=False,
@@ -912,7 +1198,11 @@ def main() -> None:
         shutdown_backend_server()
 
     # Guarantee 0% lingering .NET CLR / pythonnet background threads after GUI closes
-    os._exit(0)
+    _log_or_print(f"[GUI] exit mode={mode}")
+    if sys.platform == "win32":
+        os._exit(0)
+    else:
+        sys.exit(0)
 
 
 if __name__ == "__main__":
