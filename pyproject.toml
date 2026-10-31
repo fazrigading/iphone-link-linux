@@ -14,6 +14,8 @@ dependencies = [
     "pywebview>=5.0",
     "pycaw>=20230407",  # Windows-only audio: only referenced on Windows
     "PyQt6>=6.5",  # Linux UI backend for pywebview when GTK is unavailable
+    # Linux USB stack: libimobiledevice (including usbmuxd) must be installed and running.
+    # This package list cannot express system packages, so the README/Linux notes carry the requirement.
 ]
 
 [tool.setuptools.packages.find]

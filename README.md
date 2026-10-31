@@ -176,6 +176,15 @@ chmod +x run_linux.sh
 
 If the GUI does not start, make sure your Linux session has access to a display/server and that `python3 -c "import webview"` works in the same environment.
 
+Linux (source run) also needs the system packages that pip cannot install:
+```bash
+# Fedora
+sudo dnf install python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice ifuse
+# Debian / Ubuntu
+sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse
+```
+iPhone Link uses pywebview's GTK backend on Linux, which depends on the system PyGObject + WebKit2GTK.
+
 ---
 
 ### 🔒 Privacy & Clean Uninstall

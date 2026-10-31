@@ -16,6 +16,22 @@ import sys
 import time
 from pathlib import Path
 
+# pywebview's Linux GTK backend needs PyGObject (python3-gobject / python3-gi),
+# which is a system package and is not pip-installable into the venv. Make the
+# system site-packages available so `import gi` resolves when running from a
+# venv that does not include it.
+try:
+    import gi  # noqa: F401
+except Exception:
+    _ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+    for _base in ("/usr/lib", "/usr/lib64", "/usr/local/lib"):
+        for _sub in ("site-packages", "dist-packages"):
+            _candidate = f"{_base}/python{_ver}/{_sub}"
+            if os.path.isdir(_candidate) and _candidate not in sys.path:
+                sys.path.append(_candidate)
+    if os.path.isdir("/usr/lib/python3/dist-packages") and "/usr/lib/python3/dist-packages" not in sys.path:
+        sys.path.append("/usr/lib/python3/dist-packages")
+
 from handset import get_app_root, get_bundle_root
 from handset.server import HOST, PORT, create_http_server
 
