@@ -180,6 +180,8 @@ def _run(udid: str, transport: str) -> None:
         asyncio.run(_serve(udid, transport))
         _set(phase="idle", udid=udid, url=None, error="The screen stream stopped.")
     except Exception as error:
+        import traceback
+        traceback.print_exc()
         _set(phase="error", udid=udid, url=None, error=_plain(error))
     finally:
         try:
@@ -228,6 +230,8 @@ async def _serve(udid: str, transport: str) -> None:
                     _set(note="Mounting the developer image on the iPhone. This downloads it the first time.")
                     await auto_mount(rsd)
             except Exception as tunnel_err:
+                import traceback
+                traceback.print_exc()
                 err_text = str(tunnel_err)
                 if "already active in this process" in err_text and attempt == 0:
                     import logging
@@ -237,6 +241,8 @@ async def _serve(udid: str, transport: str) -> None:
                     continue
                 raise
     except Exception as exc:
+        import traceback
+        traceback.print_exc()
         if transport == "wifi":
             probe = probe_wifi_device(udid)
             target_ip = probe.get("ip") or get_device_wifi_state(udid).get("last_ip")
