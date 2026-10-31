@@ -12,10 +12,8 @@ requires-python = ">=3.9"
 dependencies = [
     "pymobiledevice3>=11.28",
     "pywebview>=5.0",
-    "pycaw>=20230407",  # Windows-only audio: only referenced on Windows
-    "PyQt6>=6.5",  # Linux UI backend for pywebview when GTK is unavailable
-    # Linux USB stack: libimobiledevice (including usbmuxd) must be installed and running.
-    # This package list cannot express system packages, so the README/Linux notes carry the requirement.
+    # Linux system packages (not pip-installable): python3-gobject, webkit2gtk4.1,
+    # usbmuxd, libimobiledevice, ifuse — see README Linux notes.
 ]
 
 [tool.setuptools.packages.find]

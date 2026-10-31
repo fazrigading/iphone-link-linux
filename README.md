@@ -15,7 +15,7 @@
   <a href="https://saweria.co/kelvindaniyar" target="_blank"><img src="https://img.shields.io/badge/☕_Support_on-Saweria-F59E0B?style=flat-square&logo=buymeacoffee&logoColor=white" alt="Support on Saweria"></a>
   <a href="https://github.com/teyboxv1/pane-iphone-mirror-windows"><img src="https://img.shields.io/badge/Forked%20from-teyboxv1%2Fpane--iphone--mirror--windows-blue?style=flat-square&logo=github" alt="Forked from teyboxv1"></a>
   <img src="https://img.shields.io/badge/License-GPL--3.0-green.svg?style=flat-square" alt="License: GPL-3.0">
-  <img src="https://img.shields.io/badge/Verified%20OS-Windows%2011%2026H2%20(64--bit)%20%7C%20Linux%20(x86_64)-0078D4.svg?style=flat-square&logo=windows" alt="Verified OS: Windows 11 26H2, Linux x86_64">
+  <img src="https://img.shields.io/badge/Verified%20OS-Linux%20x86__64%20(Fedora%2044)-0078D4.svg?style=flat-square&logo=linux" alt="Verified OS: Linux x86_64 (Fedora 44)">
   <img src="https://img.shields.io/badge/Verified%20Device-iPhone%2017%20Pro%20(iOS%2027.0.1)-000000.svg?style=flat-square&logo=apple" alt="Verified Device: iPhone 17 Pro iOS 27.0.1">
   <img src="https://img.shields.io/badge/Mirroring-60fps%20Hardware%20HEVC-success.svg?style=flat-square" alt="60fps HEVC">
 </p>
@@ -142,27 +142,7 @@ Before running iPhone Link, you **MUST** enable **Developer Mode** on the iPhone
 
 ---
 
-### Option 2: Run from Source (Windows)
-```powershell
-# 1. Clone repository
-git clone https://github.com/fazrigading/iphone-link-linux.git
-cd iphone-link-linux
-
-# 2. Set up Python virtual environment
-python -m venv venv
-.\venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Launch iPhone Link (In-Process Server + Native Frameless Window)
-.\iPhone Link.bat
-# (or run via: python -m handset)
-```
-
----
-
-### Option 3: Run from Source (Linux)
+### Run from Source (Linux)
 ```bash
 # 1. Clone repository
 git clone https://github.com/fazrigading/iphone-link-linux.git

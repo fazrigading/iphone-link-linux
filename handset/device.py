@@ -14,22 +14,12 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import os
 import socket
-import subprocess
 import sys
 import threading
 import time
 from pathlib import Path
-
-_WIN_NO_WINDOW_KWARGS: dict = {}
-if sys.platform == "win32":
-    _si = subprocess.STARTUPINFO()
-    _si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    _si.wShowWindow = 0  # SW_HIDE
-    _WIN_NO_WINDOW_KWARGS = {
-        "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
-        "startupinfo": _si,
-    }
 
 from handset.mux import MuxError, list_devices, lockdown_request, open_lockdown
 
@@ -46,11 +36,6 @@ INFO_KEYS = (
     "PasswordProtected",
     "ActivationState",
     "TelephonyCapability",
-)
-
-DRIVER_PATHS = (
-    Path(r"C:\Program Files\Common Files\Apple\Mobile Device Support"),
-    Path(r"C:\Program Files (x86)\Common Files\Apple\Mobile Device Support"),
 )
 
 _DEVICE_CACHE_LOCK = threading.RLock()
@@ -111,36 +96,18 @@ def driver_status() -> dict:
             if (now - cached_at) < ttl:
                 return dict(cached_val)
 
-    if sys.platform == "linux":
-        import os
-        socket_path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
-        mux = os.path.exists(socket_path) or _mux_listening_linux()
-        ready = mux
-        found = [socket_path] if mux else []
-        service = "RUNNING" if mux else None
-        if ready:
-            detail = "usbmuxd is running. Plug in the iPhone, unlock it, and tap Trust."
-        else:
-            detail = (
-                "usbmuxd is not running. Start it (systemctl start usbmuxd) or plug in an iPhone to auto-start it, "
-                "then reconnect the phone and tap Trust."
-            )
-        result = {"ready": ready, "paths": found, "service": service, "detail": detail}
-        ttl = 60.0 if ready else 5.0
-        with _DEVICE_CACHE_LOCK:
-            _DRIVER_STATUS_CACHE = (now, ttl, result)
-        return dict(result)
-
-    found = [str(path) for path in DRIVER_PATHS if path.exists()]
-    mux = _mux_listening()
-    service = "RUNNING" if mux else _service_state("Apple Mobile Device service")
-    ready = bool(found) or service == "RUNNING" or mux
+    import os
+    socket_path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
+    mux = os.path.exists(socket_path) or _mux_listening_linux()
+    ready = mux
+    found = [socket_path] if mux else []
+    service = "RUNNING" if mux else None
     if ready:
-        detail = "Apple's USB service is running. Plug in the iPhone, unlock it, and tap Trust."
+        detail = "usbmuxd is running. Plug in the iPhone, unlock it, and tap Trust."
     else:
         detail = (
-            "Windows has no Apple USB driver, so it cannot see an iPhone yet. "
-            "Install Apple Devices from the Microsoft Store, then reconnect the phone and tap Trust."
+            "usbmuxd is not running. Start it (systemctl start usbmuxd) or plug in an iPhone to auto-start it, "
+            "then reconnect the phone and tap Trust."
         )
     result = {"ready": ready, "paths": found, "service": service, "detail": detail}
     ttl = 60.0 if ready else 5.0
@@ -279,42 +246,8 @@ def developer_mode_enabled(udid: str) -> bool | None:
 
 
 def _mux_listening() -> bool:
-    if sys.platform == "linux":
-        import os
-        path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
-        return os.path.exists(path)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.4)
-    try:
-        sock.connect(("127.0.0.1", 27015))
-        return True
-    except OSError:
-        return False
-    finally:
-        sock.close()
-
-
-def _mux_listening_linux() -> bool:
     import os
     path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
     return os.path.exists(path)
 
 
-def _service_state(name: str) -> str | None:
-    try:
-        completed = subprocess.run(
-            ["sc", "query", name],
-            capture_output=True,
-            text=True,
-            timeout=8,
-            check=False,
-            **_WIN_NO_WINDOW_KWARGS,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    for line in completed.stdout.splitlines():
-        if "STATE" in line:
-            parts = line.split()
-            if parts:
-                return parts[-1]
-    return None

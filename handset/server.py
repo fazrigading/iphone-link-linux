@@ -15,15 +15,6 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-_WIN_NO_WINDOW_KWARGS: dict = {}
-if sys.platform == "win32":
-    _si = subprocess.STARTUPINFO()
-    _si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    _si.wShowWindow = 0  # SW_HIDE
-    _WIN_NO_WINDOW_KWARGS = {
-        "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
-        "startupinfo": _si,
-    }
 
 
 from handset.device import read_handset, snapshot
@@ -66,7 +57,7 @@ from handset.wifi import (
     probe_wifi_device,
     wifi_paired_udids,
 )
-from handset.audio import audio_manager
+from handset.linux_audio import linux_audio_manager as audio_manager
 
 from handset import get_app_root, get_bundle_root
 
@@ -153,7 +144,7 @@ def get_windows_clipboard_seq() -> int:
 
 
 _ACTIVE_CLIPBOARD_SOURCE = "pc"  # "pc" or "iphone"
-_LAST_WIN_CLIPBOARD_SEQ = get_windows_clipboard_seq()
+_LAST_WIN_CLIPBOARD_SEQ = 0
 
 
 def get_windows_clipboard_text() -> str | None:
@@ -303,7 +294,6 @@ def extract_text_batch(frame_data_urls: list[str], save_debug: bool = True) -> l
             encoding="utf-8",
             errors="replace",
             timeout=timeout_sec,
-            **_WIN_NO_WINDOW_KWARGS,
         )
 
         stdout_raw = res.stdout or ""

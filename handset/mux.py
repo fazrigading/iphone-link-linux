@@ -10,7 +10,6 @@ import os
 import plistlib
 import socket
 import struct
-import sys
 import threading
 from contextlib import contextmanager
 
@@ -118,30 +117,16 @@ def _recv_exact(sock: socket.socket, size: int) -> bytes:
 
 @contextmanager
 def _session(address: tuple[str, int] = USB_HOST):
-    if sys.platform == "linux":
-        # usbmuxd on Linux listens on a Unix socket, not TCP 27015.
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.settimeout(4)
-        path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
-        try:
-            try:
-                sock.connect(path)
-            except OSError as error:
-                raise MuxError(
-                    "usbmuxd is not running. Start it (systemctl start usbmuxd) and reconnect the iPhone over USB, then tap Trust This Computer."
-                ) from error
-            yield sock
-        finally:
-            sock.close()
-        return
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Linux-only: usbmuxd listens on a Unix socket.
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.settimeout(4)
+    path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
     try:
         try:
-            sock.connect(address)
+            sock.connect(path)
         except OSError as error:
             raise MuxError(
-                "Apple Mobile Device service is not running. Install Apple Devices from the Microsoft Store, reconnect the iPhone, and tap Trust."
+                "usbmuxd is not running. Start it (systemctl start usbmuxd) and reconnect the iPhone over USB, then tap Trust This Computer."
             ) from error
         yield sock
     finally:

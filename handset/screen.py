@@ -14,22 +14,10 @@ import difflib
 import json
 import re
 import struct
-import subprocess
 import sys
 import threading
 import time
 from pathlib import Path
-
-_WIN_NO_WINDOW_KWARGS: dict = {}
-if sys.platform == "win32":
-    _si = subprocess.STARTUPINFO()
-    _si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    _si.wShowWindow = 0  # SW_HIDE
-    _WIN_NO_WINDOW_KWARGS = {
-        "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
-        "startupinfo": _si,
-    }
-
 
 from handset.device import developer_mode_enabled
 from handset.mux import MuxError, list_devices

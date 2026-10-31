@@ -5,8 +5,7 @@ backend server (handset.server + handset.screen + handset.device + handset.wifi 
 handset.audio) and the same web UI, but provides a native window with a Linux
 system tray and desktop-friendly hooks.
 
-Windows remains unchanged: gui.py, tray.py, and all Win32 ctypes code stay
-Windows-only.
+Linux-only build: Windows gui.py/tray.py/audio.py have been removed.
 """
 
 from __future__ import annotations

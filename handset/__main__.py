@@ -33,15 +33,8 @@ def main() -> None:
         server_main()
         return
 
-    if sys.platform == "linux":
-        from handset.linux_main import main as linux_main
-        linux_main()
-    elif sys.platform == "win32":
-        from handset.gui import main as gui_main
-        gui_main()
-    else:
-        from handset.gui import main as other_main
-        other_main()
+    from handset.linux_main import main as linux_main
+    linux_main()
 
 
 if __name__ == "__main__":
