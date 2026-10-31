@@ -6,9 +6,11 @@ Each packet is a little-endian length, then version, message type, tag, and an X
 
 from __future__ import annotations
 
+import os
 import plistlib
 import socket
 import struct
+import sys
 import threading
 from contextlib import contextmanager
 
@@ -115,7 +117,23 @@ def _recv_exact(sock: socket.socket, size: int) -> bytes:
 
 
 @contextmanager
-def _session(address: tuple[str, int]):
+def _session(address: tuple[str, int] = USB_HOST):
+    if sys.platform == "linux":
+        # usbmuxd on Linux listens on a Unix socket, not TCP 27015.
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.settimeout(4)
+        path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
+        try:
+            try:
+                sock.connect(path)
+            except OSError as error:
+                raise MuxError(
+                    "usbmuxd is not running. Start it (systemctl start usbmuxd) and reconnect the iPhone over USB, then tap Trust This Computer."
+                ) from error
+            yield sock
+        finally:
+            sock.close()
+        return
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(4)
     try:
@@ -123,7 +141,7 @@ def _session(address: tuple[str, int]):
             sock.connect(address)
         except OSError as error:
             raise MuxError(
-                "Apple Mobile Device Service is not running. Install Apple Devices from the Microsoft Store, then reconnect the iPhone."
+                "Apple Mobile Device service is not running. Install Apple Devices from the Microsoft Store, reconnect the iPhone, and tap Trust."
             ) from error
         yield sock
     finally:
