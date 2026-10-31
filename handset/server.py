@@ -59,7 +59,7 @@ from handset.wifi import (
 )
 from handset.audio import audio_manager
 
-from handset import get_app_root, get_bundle_root
+from handset import get_app_root, get_bundle_root, get_user_data_dir
 
 
 def _resolve_web_root() -> Path:
@@ -85,11 +85,11 @@ def _resolve_ocr_script_path() -> str:
 
 
 ROOT = _resolve_web_root()
-SETTINGS_FILE = get_app_root() / "user_settings.json"
+SETTINGS_FILE = get_user_data_dir() / "user_settings.json"
 
 
 def get_settings_file_path() -> Path:
-    return get_app_root() / "user_settings.json"
+    return get_user_data_dir() / "user_settings.json"
 
 
 def get_folder_instance_id(app_root: Path | None = None) -> str:
@@ -99,7 +99,7 @@ def get_folder_instance_id(app_root: Path | None = None) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:12]
 
 
-_IS_FRESH_EXTRACTED_FOLDER: bool = not (get_app_root() / "user_settings.json").is_file()
+_IS_FRESH_EXTRACTED_FOLDER: bool = not (get_user_data_dir() / "user_settings.json").is_file()
 
 
 def is_fresh_extracted_folder() -> bool:
@@ -520,7 +520,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"ok": True, "action": "clear_chunks"})
             return
         if path == "/debug-metrics":
-            log_path = get_app_root() / "debug_metrics.json"
+            log_path = get_user_data_dir() / "debug_metrics.json"
             if log_path.is_file():
                 try:
                     self._json(json.loads(log_path.read_text(encoding="utf-8")))

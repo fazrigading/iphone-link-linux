@@ -867,7 +867,7 @@ _LAST_TYPED_ACTIVE_LINE: str = ""
 _LAST_TYPED_TIMESTAMP: float = 0.0
 _TYPED_BUFFER_LOCK = threading.Lock()
 
-from handset import get_app_root; PROJECT_ROOT = get_app_root()
+from handset import get_app_root, get_user_data_dir; PROJECT_ROOT = get_user_data_dir()
 TYPED_HISTORY_FILE = PROJECT_ROOT / "typed_history.json"
 
 
@@ -1283,7 +1283,7 @@ def wipe_all_privacy_data() -> dict:
 
     # Physical file cleanup from application root
     try:
-        project_root = get_app_root()
+        project_root = get_user_data_dir()
         targets = [
             project_root / "user_settings.json",
             project_root / "typed_history.json",

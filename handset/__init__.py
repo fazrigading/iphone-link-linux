@@ -16,6 +16,19 @@ def get_app_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+def get_user_data_dir() -> Path:
+    """Return a per-user writable directory for state files (XDG on Linux)."""
+    import os
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    base = os.environ.get("XDG_DATA_HOME")
+    if not base:
+        base = str(Path.home() / ".local" / "share")
+    d = Path(base) / "iphone-link"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 # Tahap 58: Prefer native C extensions (pylzss / lzfse .pyd) at all times.
 # Only append pure-Python _shims at the very end of sys.path if native C import genuinely raises ImportError.
 try:

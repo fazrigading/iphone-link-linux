@@ -42,7 +42,7 @@ _WIFI_LOCKDOWN_LOCK = threading.Lock()
 _WIFI_STATE_MEM_CACHE: tuple[str, float, dict] | None = None
 _PAIRED_UDIDS_MEM_CACHE: tuple[float, list[str]] | None = None
 
-from handset import get_app_root; WIFI_STATE_PATH = get_app_root() / "wifi_state.json"
+from handset import get_app_root, get_user_data_dir; WIFI_STATE_PATH = get_user_data_dir() / "wifi_state.json"
 
 
 # -----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ from handset import get_app_root; WIFI_STATE_PATH = get_app_root() / "wifi_state
 
 def load_wifi_state() -> dict:
     global _WIFI_STATE_MEM_CACHE
-    wifi_path = get_app_root() / "wifi_state.json"
+    wifi_path = get_user_data_dir() / "wifi_state.json"
     path_key = str(wifi_path)
     if not wifi_path.is_file():
         _WIFI_STATE_MEM_CACHE = (path_key, -1.0, {"devices": {}})
@@ -75,7 +75,7 @@ def load_wifi_state() -> dict:
 
 def save_wifi_state(state: dict) -> None:
     global _WIFI_STATE_MEM_CACHE
-    wifi_path = get_app_root() / "wifi_state.json"
+    wifi_path = get_user_data_dir() / "wifi_state.json"
     try:
         wifi_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
         _WIFI_STATE_MEM_CACHE = (str(wifi_path), wifi_path.stat().st_mtime, state)
@@ -409,7 +409,7 @@ async def disable_wireless_lockdown_async(udid: str, lockdown=None) -> dict:
         with _WIFI_LOCKDOWN_LOCK:
             _WIFI_LOCKDOWN_DISABLED_UDIDS.add(udid)
 
-        wifi_path = get_app_root() / "wifi_state.json"
+        wifi_path = get_user_data_dir() / "wifi_state.json"
         if wifi_path.is_file():
             device_name = None
             with contextlib.suppress(Exception):
