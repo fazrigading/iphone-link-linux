@@ -27,6 +27,7 @@
 
 ### Tested Linux Environment
 - 🐧 **Linux**: **x86_64 desktop** (Python runtime + pywebview window; see Linux notes below)
+  - Audio sink (streaming iPhone audio to the PC) is Windows-only; Linux supports PC volume control only.
 - Tested by **Fazri Gading** (`@fazrigading`) on **Fedora Linux 44 (Workstation Edition)**, kernel `7.2.13-200.fc44.x86_64`,.
 - Test device: **iPhone XS** running **iOS 18.7.11**. 
 - Note: Screen streaming could not be exercised because the stream requires **iOS 27+**; USB device detection, `usbmuxd` integration, and the Linux GUI window were verified.
@@ -168,9 +169,9 @@ If the GUI does not start, make sure your Linux session has access to a display/
 Linux (source run) also needs the system packages that pip cannot install:
 ```bash
 # Fedora
-sudo dnf install python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice ifuse
+sudo dnf install python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice ifuse xclip wl-clipboard
 # Debian / Ubuntu
-sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse
+sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse xclip wl-clipboard
 ```
 iPhone Link uses pywebview's GTK backend on Linux, which depends on the system PyGObject + WebKit2GTK.
 

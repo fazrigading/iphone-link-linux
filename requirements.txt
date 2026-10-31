@@ -1,5 +1,7 @@
 pymobiledevice3>=11.28
 pywebview>=5.0
+# Optional: system tray icon (Linux). Install if you want a tray icon:
+#   pip install pystray Pillow
 # Linux requires the system PyGObject package for pywebview's GTK backend:
 #   Fedora: sudo dnf install python3-gobject webkit2gtk4.1
 #   Debian/Ubuntu: sudo apt install python3-gi gir1.2-webkit2-4.1
