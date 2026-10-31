@@ -157,7 +157,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # 4. Make the launcher executable
-chmod +x run_linux.sh
+chmod +x run.sh
 
 # 5. Launch iPhone Link
 ./run.sh

@@ -36,4 +36,4 @@ jobs:
           python -c "import handset.__main__, handset.main, handset.gui, handset.audio, handset.clipboard, handset.server, handset.device, handset.mux, handset.screen, handset.wifi; print('imports ok')"
 
       - name: Launcher syntax check
-        run: bash -n run_linux.sh
+        run: bash -n run.sh

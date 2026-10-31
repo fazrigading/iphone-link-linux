@@ -87,9 +87,9 @@ def _webview_available() -> bool:
         return False
 
 
-def _spawn_linux_tray_in_background(api):
+def _spawn_tray_in_background(api):
     try:
-        from handset.gui import _spawn_linux_tray_in_background as _real
+        from handset.gui import _spawn_tray_in_background as _real
 
         return _real(api)
     except Exception:
@@ -169,14 +169,14 @@ def _focus_existing_window_if_running(host: str, port: int) -> bool:
     try:
         url = f"http://{host}:{port}/api/tray-state"
         if _is_server_responding(url, timeout=0.5):
-            _open_linux_window(host, port)
+            _open_window(host, port)
             return True
     except Exception:
         pass
     return False
 
 
-def _open_linux_window(host: str, port: int) -> None:
+def _open_window(host: str, port: int) -> None:
     import webview
 
     # NOTE: Linux frontend uses handset/gui.WindowApi as its JS bridge.
@@ -232,7 +232,7 @@ def _open_linux_window(host: str, port: int) -> None:
         )
     finally:
         api.close()
-        _spawn_linux_tray_in_background(api)
+        _spawn_tray_in_background(api)
 
 
 def _resolve_icon_path() -> Path | None:
@@ -293,10 +293,10 @@ def main() -> None:
             raise SystemExit(2)
 
         if not _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
-            _open_linux_window(host, port)
+            _open_window(host, port)
             return
 
-        _open_linux_window(host, port)
+        _open_window(host, port)
     finally:
         global _SERVER_PROC
         if _SERVER_PROC is not None and _SERVER_PROC.poll() is None:

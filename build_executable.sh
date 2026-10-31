@@ -3,18 +3,18 @@ set -euo pipefail
 
 # iPhone Link — Linux launcher helper
 # Usage:
-#   ./build_linux_executable.sh
+#   ./build_executable.sh
 #
 # This script prepares the Linux run script and verifies the launcher shape.
 # It does NOT produce a compiled ELF binary because iPhone Link is a Python +
 # pywebview app. The intended Linux entry points are:
-#   - ./run_linux.sh               (launcher with venv guidance)
+#   - ./run.sh               (launcher with venv guidance)
 #   - python3 -m handset          (direct module run)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-RUN_SH="run_linux.sh"
+RUN_SH="run.sh"
 
 if [ ! -f "requirements.txt" ]; then
   echo "ERROR: requirements.txt not found in project root" >&2
@@ -69,7 +69,7 @@ if [ ! -x "$RUN_SH" ]; then
 fi
 
 echo "Created executable: $RUN_SH"
-echo "Verify with: ./run_linux.sh --help"
+echo "Verify with: ./run.sh --help"
 echo "Or run directly: python3 -m handset"
 
 # Optional: print a short desktop-launcher template for Linux users who want one.
@@ -78,7 +78,7 @@ cat > "iphone-link.desktop" <<'EOF'
 Type=Application
 Name=iPhone Link
 Comment=Native iPhone mirroring and control (Linux source build)
-Exec=/absolute/path/to/iphone-link/run_linux.sh
+Exec=/absolute/path/to/iphone-link/run.sh
 Icon=/absolute/path/to/iphone-link/assets/iphone_link.png
 Terminal=false
 Categories=Utility;

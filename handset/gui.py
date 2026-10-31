@@ -39,13 +39,13 @@ from handset.server import load_user_settings, save_user_settings
 try:
     import pystray  # noqa: F401
     import PIL  # noqa: F401
-    _linux_tray_available = True
+    _tray_available = True
 except Exception:
-    _linux_tray_available = False
+    _tray_available = False
 
 
-def _linux_tray_available() -> bool:
-    return _linux_tray_available
+def _tray_available() -> bool:
+    return _tray_available
 
 
 def _resolve_icon_path() -> Path | None:
@@ -284,7 +284,7 @@ class WindowApi:
             return wipe_all_privacy_data()
 
 
-def _linux_tray_loop(api: WindowApi) -> None:
+def _tray_loop(api: WindowApi) -> None:
     return
 
 
@@ -292,7 +292,7 @@ def _has_gtk_tray() -> bool:
     return False
 
 
-def _start_linux_tray(api: WindowApi) -> bool:
+def _start_tray(api: WindowApi) -> bool:
     """Start a separate Linux system tray icon for the window.
 
     This is a Linux-only feature using ``pystray`` + Pillow. It does not touch any
@@ -330,11 +330,11 @@ def _run(fn):
     threading.Thread(target=fn, daemon=True).start()
 
 
-def _spawn_linux_tray_in_background(api: WindowApi) -> None:
+def _spawn_tray_in_background(api: WindowApi) -> None:
     import threading
 
     def _tray_worker():
-        _start_linux_tray(api)
+        _start_tray(api)
 
     t = threading.Thread(target=_tray_worker, name="iphonelink-linux-tray", daemon=True)
     t.start()
@@ -350,13 +350,13 @@ def main() -> None:
     host, port = _parse_host_port()
 
     if _is_server_responding(f"http://{host}:{port}/api/tray-state", timeout=0.5):
-        _open_linux_window(host, port)
+        _open_window(host, port)
         return
 
-    _open_linux_window(host, port)
+    _open_window(host, port)
 
 
-def _open_linux_window(host: str, port: int) -> None:
+def _open_window(host: str, port: int) -> None:
     import webview
 
     api = WindowApi(host=host, port=port)
@@ -408,7 +408,7 @@ def _open_linux_window(host: str, port: int) -> None:
         )
     finally:
         api.close()
-        _spawn_linux_tray_in_background(api)
+        _spawn_tray_in_background(api)
 
 
 def _resolve_webview_storage_path() -> str:

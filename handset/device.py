@@ -98,7 +98,7 @@ def driver_status() -> dict:
 
     import os
     socket_path = os.environ.get("USBMUXD_SOCKET_ADDRESS", "/var/run/usbmuxd")
-    mux = os.path.exists(socket_path) or _mux_listening_linux()
+    mux = os.path.exists(socket_path) or _mux_listening()
     ready = mux
     found = [socket_path] if mux else []
     service = "RUNNING" if mux else None

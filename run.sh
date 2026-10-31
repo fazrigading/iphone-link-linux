@@ -6,8 +6,8 @@ set -euo pipefail
 # For a standalone frozen build, run the frozen executable instead.
 #
 # Usage:
-#   ./run_linux.sh                # normal launch
-#   ./run_linux.sh --verbose      # verbose: keep backend logs in ./iphone-link.log
+#   ./run.sh                # normal launch
+#   ./run.sh --verbose      # verbose: keep backend logs in ./iphone-link.log
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
