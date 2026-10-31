@@ -6,11 +6,9 @@ __pycache__/
 # Virtual environments
 .venv/
 
-# Build / release artifacts
+# Build / release artifacts (standard Python)
 build/
 dist/
-release/
-packaging/
 *.zip
 
 # Editor / IDE
