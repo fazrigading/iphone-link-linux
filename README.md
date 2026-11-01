@@ -1,46 +1,35 @@
-# iPhone Link — Native iPhone Mirroring & Control for Windows + Linux
+# iPhone Link for Linux
 
 <p align="center">
   <img src="assets/logo.png" width="180" height="180" alt="iPhone Link logo" style="border-radius: 40px; box-shadow: 0 16px 36px rgba(0, 120, 212, 0.35);">
 </p>
 
 <h1 align="center">📱🔗 iPhone Link</h1>
-<p align="center">
-  <b>High-Performance iPhone Screen Mirroring, Touch Control &amp; Cross-Platform OCR Suite for Windows and Linux.</b><br>
-  <i>Inspired by Windows Phone Link &amp; macOS Sequoia iPhone Mirroring.</i>
-</p>
 
 <p align="center">
-  <a href="https://github.com/kelvindaniyar"><img src="https://img.shields.io/badge/Developer-Kelvin%20Daniyar%20(%40kelvindaniyar)-4F46E5?style=flat-square&logo=github" alt="Developer: Kelvin Daniyar"></a>
-  <a href="https://saweria.co/kelvindaniyar" target="_blank"><img src="https://img.shields.io/badge/☕_Support_on-Saweria-F59E0B?style=flat-square&logo=buymeacoffee&logoColor=white" alt="Support on Saweria"></a>
-  <a href="https://github.com/teyboxv1/pane-iphone-mirror-windows"><img src="https://img.shields.io/badge/Forked%20from-teyboxv1%2Fpane--iphone--mirror--windows-blue?style=flat-square&logo=github" alt="Forked from teyboxv1"></a>
+  <a href="https://github.com/fazrigading"><img src="https://img.shields.io/badge/Author-Fazri%20Gading%20(%40fazrigading)-4F46E5?style=flat-square&logo=github" alt="Author: Fazri Gading"></a>
+  <a href="https://github.com/kelvindaniyar/iphone-link"><img src="https://img.shields.io/badge/Forked%20from-kelvindaniyar%2Fiphone--link-blue?style=flat-square&logo=github" alt="Forked from kelvindaniyar"></a>
+  <a href="https://github.com/teyboxv1/pane-iphone-mirror-windows"><img src="https://img.shields.io/badge/Upstream-teyboxv1%2Fpane--iphone--mirror--windows-blue?style=flat-square&logo=github" alt="Forked from teyboxv1"></a>
   <img src="https://img.shields.io/badge/License-GPL--3.0-green.svg?style=flat-square" alt="License: GPL-3.0">
-  <img src="https://img.shields.io/badge/Verified%20OS-Linux%20x86__64%20(Fedora%2044)-0078D4.svg?style=flat-square&logo=linux" alt="Verified OS: Linux x86_64 (Fedora 44)">
-  <img src="https://img.shields.io/badge/Verified%20Device-iPhone%2017%20Pro%20(iOS%2027.0.1)-000000.svg?style=flat-square&logo=apple" alt="Verified Device: iPhone 17 Pro iOS 27.0.1">
-  <img src="https://img.shields.io/badge/Mirroring-60fps%20Hardware%20HEVC-success.svg?style=flat-square" alt="60fps HEVC">
+  <img src="https://img.shields.io/badge/Verified%20OS-Fedora%20x86__64-0078D4.svg?style=flat-square&logo=linux" alt="Verified OS: Fedora x86_64">
 </p>
-
-### 🛡️ Tested & Verified Environment
-- 📱 **Target Device**: **iPhone 17 Pro** (Physical Device running **iOS 27.0.1**)
-- 💻 **PC / Operating System**: **Windows 11 Version 26H2** (Build 26100+, 64-bit)
-- 🚀 **Performance**: 60fps Zero-Delay Hardware HEVC Stream & Full Touch / OCR Control
 
 ### Tested Linux Environment
 - 🐧 **Linux**: **x86_64 desktop** (Python runtime + pywebview window; see Linux notes below)
   - Audio sink (streaming iPhone audio to the PC) is Windows-only; Linux supports PC volume control only.
-- Tested by **Fazri Gading** (`@fazrigading`) on **Fedora Linux 44 (Workstation Edition)**, kernel `7.2.13-200.fc44.x86_64`,.
+- Tested by **Fazri Gading** (`@fazrigading`) on **Fedora Linux 44 (Workstation Edition)**, kernel `7.2.13-200.fc44.x86_64`.
 - Test device: **iPhone XS** running **iOS 18.7.11**. 
-- Note: Screen streaming could not be exercised because the stream requires **iOS 27+**; USB device detection, `usbmuxd` integration, and the Linux GUI window were verified.
+- Note: Screen streaming could not be tested because the stream requires **iOS 27+**; USB device detection, `usbmuxd` integration, and the Linux GUI window were verified.
 
 ---
 
 ### 🌟 Author, Attribution & Open-Source Lineage
 
-- **Linux Port & Testing Contributor**: **Fazri Gading** ([GitHub `@fazrigading`](https://github.com/fazrigading)) — Linux source-run support, pywebview GTK backend integration, and usbmuxd/udev handling.
-- **Creator & Lead Developer of iPhone Link**: **Kelvin Daniyar** ([GitHub `@kelvindaniyar`](https://github.com/kelvindaniyar) · [Instagram `@kelvin.daniyar`](https://www.instagram.com/kelvin.daniyar/) · [TikTok `@kelvindaniyar`](https://www.tiktok.com/@kelvindaniyar)).
-- Designed and engineered **iPhone Link** (WinUI 3 Liquid Glass Frameless UI, Responsive Compact Top Bar, Mac-Style Stealth Dim Mode 0% with ~25% Calibrated Restore, Remote Wake & Auto-PIN Unlock, Landscape Gaming Mode `Alt+H` with Inverse Touch Matrix, Bidirectional Smart OCR Copy-Paste for Apple Notes & Google Keep, Smart Auto-Clear Cache, and Bluetooth Audio Sink on Windows).
-- **Upstream Open-Source Source (Forked From)**: Developed from the foundational open-source project [**teyboxv1/pane-iphone-mirror-windows**](https://github.com/teyboxv1/pane-iphone-mirror-windows) by **teyboxv1**, licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  
-- We gratefully acknowledge and credit **teyboxv1** and the open-source contributors of Pane and **[pymobiledevice3](https://github.com/doronz88/pymobiledevice3)** (by Doron Zavelevsky) for establishing the foundational USB RemoteXPC tunneling mechanism that made native iOS mirroring on Windows possible.
+- **Author & Maintainer (Linux Port)**: **Fazri Gading** ([GitHub `@fazrigading`](https://github.com/fazrigading))
+- **Previous Authors & Lineage**:
+  - **Kelvin Daniyar** ([GitHub `@kelvindaniyar`](https://github.com/kelvindaniyar)) - Original creator of [iPhone Link](https://github.com/kelvindaniyar/iphone-link), licensed under the GNU General Public License v3.0 (GPL-3.0).
+  - **teyboxv1** ([GitHub `@teyboxv1`](https://github.com/teyboxv1)) - Creator of foundational upstream project [pane-iphone-mirror-window*](https://github.com/teyboxv1/pane-iphone-mirror-windows), licensed under the GNU General Public License v3.0 (GPL-3.0).
+  - **Doron Zavelevsky** ([GitHub `@doronz88`](https://github.com/doronz88)) - Creator of [pymobiledevice3](https://github.com/doronz88/pymobiledevice3) for establishing the foundational USB RemoteXPC tunneling mechanism.
 
 ---
 
@@ -80,10 +69,10 @@ iPhone Link provides intuitive keyboard shortcuts mapped for maximum productivit
 | **`Alt + U`** | **🔓 Remote Wake &amp; Unlock** | Wakes iPhone, swipes up, bypasses Face ID delay, and inputs PIN. |
 | **`Alt + L`** | **🔒 Lock iPhone Screen** | Safely restores brightness if dimmed, then puts iPhone to sleep. |
 | **`Ctrl + K`** | **⌨️ Toggle On-Screen Keyboard** | Shows / hides the iOS virtual software keyboard. |
-| **`Ctrl + C`** | **Internal iOS Copy (⌘C)** | Instant internal copy within iOS apps without triggering system OCR. |
-| **`Ctrl + V`** | **Internal iOS Paste (⌘V)** | Instant native iOS paste preserving all internal rich formatting. |
-| **`Ctrl + A`** | **Select All (⌘A)** | Selects all text in the focused iOS field. |
-| **`Ctrl + Z`** | **Undo (⌘Z)** | Reverses the last text action in iOS. |
+| **`Ctrl + C`** | **Internal iOS Copy** | Instant internal copy within iOS apps without triggering system OCR. |
+| **`Ctrl + V`** | **Internal iOS Paste** | Instant native iOS paste preserving all internal rich formatting. |
+| **`Ctrl + A`** | **Select All** | Selects all text in the focused iOS field. |
+| **`Ctrl + Z`** | **Undo** | Reverses the last text action in iOS. |
 
 ---
 
@@ -225,23 +214,11 @@ iPhone Link establishes a secure, local-only communication pipeline between your
 
 ---
 
-## 💖 Support This Project (Donasi & Dukungan)
-
-Jika **iPhone Link** membantu produktivitas harian, pekerjaan kreatif, atau pengalaman gaming Anda, Anda dapat mendukung pengembangan proyek open-source ini melalui **Saweria**:
-
-<p align="left">
-  <a href="https://saweria.co/kelvindaniyar" target="_blank">
-    <img src="https://img.shields.io/badge/☕_Dukung_Kelvin_Daniyar_di_Saweria-saweria.co%2Fkelvindaniyar-F59E0B?style=for-the-badge&logo=coffee&logoColor=white" alt="Support Kelvin Daniyar on Saweria">
-  </a>
-</p>
-
-* 🔗 **Saweria Link:** [**https://saweria.co/kelvindaniyar**](https://saweria.co/kelvindaniyar)
-
----
-
 ## 📄 License & Credits
 
-- **Creator & Lead Developer**: [**Kelvin Daniyar**](https://github.com/kelvindaniyar) ([@kelvindaniyar](https://github.com/kelvindaniyar)).
+- **Author & Maintainer (Linux Port)**: [**Fazri Gading @fazrigading**](https://github.com/fazrigading).
+- **Previous Authors & Credits**:
+  - [**Kelvin Daniyar**](https://github.com/kelvindaniyar) - Original [iPhone Link](https://github.com/kelvindaniyar/iphone-link) author.
+  - [**teyboxv1**](https://github.com/teyboxv1) - Upstream [Pane: iPhone Mirror on Windows](https://github.com/teyboxv1/pane-iphone-mirror-windows) project author.
+  - [**Doron Zavelevsky (`doronz88`)**](https://github.com/doronz88) - Core library [pymobiledevice3](https://github.com/doronz88/pymobiledevice3).
 - **License**: GNU General Public License v3.0 ([GPL-3.0](LICENSE)).
-- **Upstream Project**: Forked and enhanced from [**teyboxv1/pane-iphone-mirror-windows**](https://github.com/teyboxv1/pane-iphone-mirror-windows) by teyboxv1.
-- **Core Library**: Powered by [pymobiledevice3](https://github.com/doronz88/pymobiledevice3) by Doron Zavelevsky.
