@@ -1,4 +1,4 @@
-"""Xcode's device screen, on Windows.
+"""Xcode's device screen on Linux.
 
 After Trust, iOS 17.4+ exposes CoreDeviceProxy over the USB service broker,
 or RemotePairing over Wi-Fi once paired for it. Either tunnel carries a
@@ -274,7 +274,7 @@ async def _serve(udid: str, transport: str) -> None:
             ip_str = f" ({probe.get('ip')})" if probe.get("ip") else ""
             raise RuntimeError(
                 f"Gagal menghubungkan tunnel mirroring Wi-Fi ke iPhone{ip_str}: {exc}. "
-                "Pastikan Developer Mode aktif dan firewall Windows mengizinkan koneksi lokal."
+                "Pastikan Developer Mode aktif dan firewall mengizinkan koneksi lokal."
             ) from exc
         raise
 
@@ -290,7 +290,7 @@ async def _stream(rsd, udid: str, ScreenStreamServer) -> None:
     )
 
     async def _eager_video_only() -> None:
-        # Windows cannot decode AAC-ELD; skip eager audio so logs stay clean and
+        # Device audio streaming uses Bluetooth A2DP; skip eager audio so logs stay clean and
         # the display tunnel still comes up for /codec and /stream.bin.
         try:
             await server._ensure_fresh_stream(force=False)
@@ -2310,7 +2310,7 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
 def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = None) -> str:
     """
     Final Paragraph Formatter (Tahap 32 & Tahap 33):
-    Called AS THE VERY LAST STEP before sending to Windows Clipboard.
+    Called AS THE VERY LAST STEP before sending to system clipboard.
     Guarantees clean double newlines (\\r\\n\\r\\n) between paragraphs and single newlines (\\r\\n) within paragraphs and hashtags.
     Strictly forbids fake double newlines (\\r\\n\\r\\n) mid-sentence for long text!
     For short text (<= 5 lines), 100% preserves empty lines between lines!
@@ -2468,7 +2468,7 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
     # Multi-line / cross-line OCR optical restoration (Tahap 38)
     joined = re.sub(r'\(\s*Al\s+Generated\s+Content\s*\)', '(AI Generated Content)', joined, flags=re.IGNORECASE)
     joined = re.sub(r'\bAl\s+Generated\b', 'AI Generated', joined)
-    # Normalize Windows CRLF line endings
+    # Normalize line endings
     joined = re.sub(r'(\r?\n){3,}', '\r\n\r\n', joined)
     joined = re.sub(r'(?<!\r)\n', '\r\n', joined)
     joined = joined.replace("\r\r\n", "\r\n")

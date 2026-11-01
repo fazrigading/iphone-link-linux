@@ -1,11 +1,7 @@
 """Linux desktop entry point for iPhone Link.
 
-On Linux this path is a separate process from the Windows gui.py / tray.py stack.
-It reuses the same libhandset backend (server.py + audio/screen/device/wifi) but
-provides a native Linux window with pywebview and desktop integration (app icon,
-system tray, system volume, clipboard).
-
-Windows feature is untouched: gui.py, tray.py, and Windows-only helpers stay Win32.
+Runs the backend server and provides a native Linux window with pywebview
+and desktop integration (app icon, system tray, volume control, clipboard).
 """
 
 from __future__ import annotations
@@ -165,8 +161,6 @@ def _is_server_responding(url: str, timeout: float = 2.0) -> bool:
 
 
 def _focus_existing_window_if_running(host: str, port: int) -> bool:
-    if sys.platform != "linux":
-        return False
     try:
         url = f"http://{host}:{port}/api/tray-state"
         if _is_server_responding(url, timeout=0.5):

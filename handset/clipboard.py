@@ -1,11 +1,9 @@
 """Linux clipboard integration for iPhone Link.
 
-On Linux the app uses the desktop clipboard via one of:
-- pyperclip (most desktops)
-- xclip/libxcopy-style CLI fallback (X11)
+Integrates with the desktop clipboard via:
+- pyperclip
 - wl-copy/wl-paste (Wayland)
-
-Windows clipboard code is unchanged in handset/server.py.
+- xclip/xsel (X11)
 """
 
 from __future__ import annotations

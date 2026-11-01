@@ -6,7 +6,7 @@ import sys
 def _print_help() -> None:
     print("iPhone Link - Native iPhone Mirroring & Control")
     print()
-    print("Linux/Windows source run:")
+    print("Linux source run:")
     print("  python -m handset                 # default: start backend + window")
     print("  python -m handset --server-only  # backend only")
     print("  python -m handset --server-child --host HOST --port PORT")

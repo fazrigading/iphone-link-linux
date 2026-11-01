@@ -1,12 +1,7 @@
 """Linux audio integration for iPhone Link.
 
-On Linux the Windows AudioPlaybackConnection A2DP stack stays unchanged in handset/audio.py.
-This module adds a small Linux-side volume control helper (PulseAudio/PipeWire via pactl,
-or a no-op fallback) and exposes the same status shape the web UI already reads.
-
-The app still mirrors iPhone audio to the PC's default output device; this module exists so
-the Linux launcher can keep the "Stream Audio to PC" tray toggle meaningful without calling
-Windows APIs (/dev/video3 would be off-topic here).
+Provides volume control helpers (PulseAudio/PipeWire via pactl or wpctl)
+and desktop Bluetooth pairing settings integration.
 """
 
 from __future__ import annotations

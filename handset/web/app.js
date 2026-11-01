@@ -1120,7 +1120,7 @@ document.querySelector("#win-close")?.addEventListener("click", () => {
   }
 });
 
-// Native Win32 Window Dragging (only on empty area of .app-bar)
+// Native Window Dragging (only on empty area of .app-bar)
 const appBar = document.querySelector(".app-bar");
 appBar?.addEventListener("mousedown", (e) => {
   if (e.target.closest("button, input, select, a, .no-drag, [data-action], .win-btn, .bar-btn, .icon-btn")) {

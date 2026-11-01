@@ -1,6 +1,6 @@
-"""usbmuxd plist client for the Apple mobile-device service on Windows.
+"""usbmuxd client for Apple mobile devices on Linux.
 
-The service listens on 127.0.0.1:27015 after Apple Devices or iTunes is installed.
+Communicates with usbmuxd over the Unix domain socket (/var/run/usbmuxd).
 Each packet is a little-endian length, then version, message type, tag, and an XML plist.
 """
 

@@ -1,11 +1,7 @@
 """Linux GUI front-end for iPhone Link using pywebview.
 
-This is the Linux counterpart to gui.py/tray.py on Windows. It shares the same
-backend server (handset.server + handset.screen + handset.device + handset.wifi +
-handset.audio) and the same web UI, but provides a native window with a Linux
-system tray and desktop-friendly hooks.
-
-Linux-only build: Windows gui.py/tray.py/audio.py have been removed.
+Provides the WindowApi JS bridge, webview window, system tray integration,
+and desktop integration hooks.
 """
 
 from __future__ import annotations
@@ -295,8 +291,7 @@ def _has_gtk_tray() -> bool:
 def _start_tray(api: WindowApi) -> bool:
     """Start a separate Linux system tray icon for the window.
 
-    This is a Linux-only feature using ``pystray`` + Pillow. It does not touch any
-    Windows code. If Pillow/pystray are unavailable the function returns False and
+    Uses ``pystray`` + Pillow. If unavailable, returns False and
     the window keeps its pywebview tray (if any).
     """
     try:
