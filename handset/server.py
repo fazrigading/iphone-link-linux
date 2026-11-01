@@ -17,6 +17,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 
 
+from handset.clipboard import get_clipboard_text, set_clipboard_text
 from handset.device import read_handset, snapshot
 from handset.mux import MuxError
 from handset.screen import (
@@ -73,17 +74,6 @@ def _resolve_web_root() -> Path:
     return Path(__file__).resolve().parent / "web"
 
 
-def _resolve_ocr_script_path() -> str:
-    for cand in (
-        get_app_root() / "handset" / "ocr_extractor.ps1",
-        get_bundle_root() / "handset" / "ocr_extractor.ps1",
-        Path(__file__).resolve().parent / "ocr_extractor.ps1",
-    ):
-        if cand.is_file():
-            return str(cand)
-    return str(Path(__file__).resolve().parent / "ocr_extractor.ps1")
-
-
 ROOT = _resolve_web_root()
 SETTINGS_FILE = get_user_data_dir() / "user_settings.json"
 
@@ -134,187 +124,30 @@ DEFAULT_SETTINGS = {
     "pastePcClipboard": True,
 }
 
-def get_windows_clipboard_seq() -> int:
-    """Return the Windows clipboard sequence number (increments on every copy/cut)."""
-    try:
-        import ctypes
-        return int(ctypes.windll.user32.GetClipboardSequenceNumber())
-    except Exception:
-        return 0
-
-
 _ACTIVE_CLIPBOARD_SOURCE = "pc"  # "pc" or "iphone"
-_LAST_WIN_CLIPBOARD_SEQ = 0
+_LAST_CLIPBOARD_TEXT_HASH: int | None = None
+_CLIPBOARD_SEQ = 0
+_LAST_CLIPBOARD_SEQ = 0
 
 
-def get_windows_clipboard_text() -> str | None:
-    """Read plain/unicode text from the Windows PC clipboard."""
-    try:
-        import ctypes
-        user32 = ctypes.windll.user32
-        kernel32 = ctypes.windll.kernel32
-        if not user32.OpenClipboard(0):
-            return None
-        try:
-            CF_UNICODETEXT = 13
-            h_clip = user32.GetClipboardData(CF_UNICODETEXT)
-            if not h_clip:
-                return None
-            p_text = kernel32.GlobalLock(h_clip)
-            if not p_text:
-                return None
-            try:
-                return ctypes.c_wchar_p(p_text).value
-            finally:
-                kernel32.GlobalUnlock(h_clip)
-        finally:
-            user32.CloseClipboard()
-    except Exception as e:
-        print(f"get_windows_clipboard_text error: {e}", flush=True)
-        return None
-
-
-def set_windows_clipboard_text(text: str) -> bool:
-    """Write unicode text to the Windows PC clipboard safely in 64-bit."""
-    if not text:
-        return False
-    try:
-        import ctypes
-        from ctypes import wintypes
-
-        user32 = ctypes.windll.user32
-        kernel32 = ctypes.windll.kernel32
-
-        user32.OpenClipboard.argtypes = [wintypes.HWND]
-        user32.OpenClipboard.restype = wintypes.BOOL
-        user32.EmptyClipboard.argtypes = []
-        user32.EmptyClipboard.restype = wintypes.BOOL
-        user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
-        user32.SetClipboardData.restype = wintypes.HANDLE
-        user32.CloseClipboard.argtypes = []
-        user32.CloseClipboard.restype = wintypes.BOOL
-
-        kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
-        kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
-        kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
-        kernel32.GlobalLock.restype = wintypes.LPVOID
-        kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
-        kernel32.GlobalUnlock.restype = wintypes.BOOL
-        kernel32.RtlMoveMemory.argtypes = [wintypes.LPVOID, wintypes.LPCVOID, ctypes.c_size_t]
-        kernel32.RtlMoveMemory.restype = None
-
-        if not user32.OpenClipboard(None):
-            return False
-        try:
-            if not user32.EmptyClipboard():
-                return False
-
-            encoded = text.encode("utf-16le") + b"\x00\x00"
-            GMEM_MOVEABLE = 0x0002
-            CF_UNICODETEXT = 13
-
-            h_mem = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(encoded))
-            if not h_mem:
-                return False
-
-            p_mem = kernel32.GlobalLock(h_mem)
-            if not p_mem:
-                return False
-
-            try:
-                kernel32.RtlMoveMemory(p_mem, encoded, len(encoded))
-            finally:
-                kernel32.GlobalUnlock(h_mem)
-
-            if not user32.SetClipboardData(CF_UNICODETEXT, h_mem):
-                return False
-            return True
-        finally:
-            user32.CloseClipboard()
-    except Exception as e:
-        print(f"set_windows_clipboard_text error: {e}", flush=True)
-        return False
+def get_clipboard_seq() -> int:
+    """Return clipboard sequence counter, incremented when clipboard text changes."""
+    global _LAST_CLIPBOARD_TEXT_HASH, _CLIPBOARD_SEQ
+    text = get_clipboard_text()
+    h = hash(text) if text is not None else None
+    if h != _LAST_CLIPBOARD_TEXT_HASH:
+        _LAST_CLIPBOARD_TEXT_HASH = h
+        _CLIPBOARD_SEQ += 1
+    return _CLIPBOARD_SEQ
 
 
 def extract_text_batch(frame_data_urls: list[str], save_debug: bool = True) -> list[str]:
-    """Extract text from one or more iPhone frames in a single PowerShell process.
-    The last frame in frame_data_urls uses Highlight-Crop; earlier frames use Full-Viewport Content Crop.
-    Returns a list of extracted strings (one per input frame).
-    """
-    if not frame_data_urls:
-        return []
-    try:
-        import base64, tempfile, subprocess, os, json
-        valid_frames = []
-        tmp_files = []
-        project_root = get_app_root()
-
-        for idx, furl in enumerate(frame_data_urls):
-            if not furl:
-                continue
-            if furl.startswith("data:") and "," in furl:
-                header, b64data = furl.split(",", 1)
-                raw_bytes = base64.b64decode(b64data)
-                if len(raw_bytes) < 100:
-                    continue
-                suffix = ".png" if "image/png" in header else ".jpg"
-                tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
-                tmp.write(raw_bytes)
-                tmp.close()
-                tmp_files.append(tmp.name)
-                valid_frames.append((idx, tmp.name, raw_bytes))
-            elif os.path.isfile(furl):
-                abs_f = os.path.abspath(furl)
-                tmp_files.append(abs_f)
-                try:
-                    with open(abs_f, "rb") as rf:
-                        raw_bytes = rf.read()
-                    valid_frames.append((idx, abs_f, raw_bytes))
-                except Exception:
-                    pass
-
-        if not tmp_files:
-            return []
-
-        if save_debug and valid_frames:
-            try:
-                with open(project_root / "debug_ocr_raw.png", "wb") as f_raw:
-                    f_raw.write(valid_frames[-1][2])
-            except Exception:
-                pass
-
-        joined_paths = "|".join(tmp_files)
-        script_path = _resolve_ocr_script_path()
-        timeout_sec = 18.0
-
-        res = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path, "-ImagePaths", joined_paths],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=timeout_sec,
-        )
-
-        stdout_raw = res.stdout or ""
-        frame_chunks = stdout_raw.split("---FRAME_SPLIT---")
-        results = [chunk.strip() for chunk in frame_chunks if chunk.strip()]
-        return results
-    except Exception as e:
-        print(f"extract_text_batch error: {e}", flush=True)
-        return []
-    finally:
-        temp_dir = tempfile.gettempdir()
-        for tpath in tmp_files:
-            if temp_dir in tpath:
-                try:
-                    os.remove(tpath)
-                except Exception:
-                    pass
+    """Extract text from one or more iPhone frames."""
+    return []
 
 
 def extract_text_from_frame(frame_data_url: str, save_debug: bool = True) -> str | None:
-    """Extract highlighted/selected text from iPhone screen frame using Windows 11 WinRT OCR."""
+    """Extract highlighted/selected text from iPhone screen frame."""
     if not frame_data_url or "," not in frame_data_url:
         return None
     try:
@@ -345,17 +178,17 @@ def extract_text_from_frame(frame_data_url: str, save_debug: bool = True) -> str
 
 
 def paste_to_iphone(text: str | None = None, force_pc: bool = False, paste_pc_client_setting: bool | None = None) -> dict:
-    """Smart paste: Direct HID Typing Injection for Windows PC text or native Cmd+V for internal iOS copy."""
-    global _ACTIVE_CLIPBOARD_SOURCE, _LAST_WIN_CLIPBOARD_SEQ
+    """Smart paste: Direct HID Typing Injection for PC text or native Cmd+V for internal iOS copy."""
+    global _ACTIVE_CLIPBOARD_SOURCE, _LAST_CLIPBOARD_SEQ
     settings = load_user_settings()
     paste_pc_enabled = settings.get("pastePcClipboard", True) if paste_pc_client_setting is None else bool(paste_pc_client_setting)
 
     # Rule 1: Explicit PC paste request (e.g. from "Paste PC Text Now" button)
     if force_pc:
-        pc_text = text if text is not None else get_windows_clipboard_text()
+        pc_text = text if text is not None else get_clipboard_text()
         if pc_text:
             _ACTIVE_CLIPBOARD_SOURCE = "pc"
-            _LAST_WIN_CLIPBOARD_SEQ = get_windows_clipboard_seq()
+            _LAST_CLIPBOARD_SEQ = get_clipboard_seq()
             typed = type_text_to_iphone(pc_text)
             return {"ok": True, "method": "typed", "length": typed}
         return {"ok": False, "error": "Clipboard is empty"}
@@ -365,11 +198,11 @@ def paste_to_iphone(text: str | None = None, force_pc: bool = False, paste_pc_cl
         ok = trigger_ios_shortcut("paste-ios")
         return {"ok": ok, "method": "ios-shortcut", "reason": "toggle-off"}
 
-    # Rule 3: Check sequence number to see if user copied something NEW in Windows
-    current_seq = get_windows_clipboard_seq()
-    if current_seq != _LAST_WIN_CLIPBOARD_SEQ:
+    # Rule 3: Check sequence number to see if user copied something NEW on PC
+    current_seq = get_clipboard_seq()
+    if current_seq != _LAST_CLIPBOARD_SEQ:
         _ACTIVE_CLIPBOARD_SOURCE = "pc"
-        _LAST_WIN_CLIPBOARD_SEQ = current_seq
+        _LAST_CLIPBOARD_SEQ = current_seq
 
     # Rule 4: If active source is iPhone (user just copied/cut in iPhone and did not copy new PC text)
     if _ACTIVE_CLIPBOARD_SOURCE == "iphone":
@@ -377,7 +210,7 @@ def paste_to_iphone(text: str | None = None, force_pc: bool = False, paste_pc_cl
         return {"ok": ok, "method": "ios-shortcut", "reason": "iphone-source"}
 
     # Rule 5: Active source is PC -> type PC clipboard text
-    pc_text = text if text is not None else get_windows_clipboard_text()
+    pc_text = text if text is not None else get_clipboard_text()
     if pc_text:
         typed = type_text_to_iphone(pc_text)
         return {"ok": True, "method": "typed", "length": typed}
@@ -613,10 +446,10 @@ class Handler(BaseHTTPRequestHandler):
             # Trigger native iOS hotkey
             ok = trigger_ios_shortcut(action)
 
-            global _ACTIVE_CLIPBOARD_SOURCE, _LAST_WIN_CLIPBOARD_SEQ
+            global _ACTIVE_CLIPBOARD_SOURCE, _LAST_CLIPBOARD_SEQ
             if action in ("copy", "cut"):
                 _ACTIVE_CLIPBOARD_SOURCE = "iphone"
-                _LAST_WIN_CLIPBOARD_SEQ = get_windows_clipboard_seq()
+                _LAST_CLIPBOARD_SEQ = get_clipboard_seq()
 
                 if skip_ocr or not frame_data_url:
                     self._json({"ok": ok, "action": action, "internal": True})
@@ -626,12 +459,12 @@ class Handler(BaseHTTPRequestHandler):
                 auto_cleared_cache = False
 
                 def _do_extract(frame_url: str, hist_urls: list[str]):
-                    global _ACTIVE_CLIPBOARD_SOURCE, _LAST_WIN_CLIPBOARD_SEQ
+                    global _ACTIVE_CLIPBOARD_SOURCE, _LAST_CLIPBOARD_SEQ
                     try:
                         recent_hist = [h for h in hist_urls if h and h != frame_url][:3] if hist_urls else []
                         frames_to_batch = recent_hist + [frame_url]
 
-                        # Single-Pass Batch OCR: executes PowerShell with fast single-frame first (< 1.5s)!
+                        # Single-Pass Batch OCR: executes fast single-frame first (< 1.5s)!
                         batch_texts = extract_text_batch(frames_to_batch, save_debug=True)
 
                         # Centralized OCR post-processing pipeline (Tahap 39/40)
@@ -656,10 +489,10 @@ class Handler(BaseHTTPRequestHandler):
                             print(f"debug_ocr_result.json save error: {err}", flush=True)
 
                         if final_text:
-                            if set_windows_clipboard_text(final_text):
-                                _LAST_WIN_CLIPBOARD_SEQ = get_windows_clipboard_seq()
+                            if set_clipboard_text(final_text):
+                                _LAST_CLIPBOARD_SEQ = get_clipboard_seq()
                                 _ACTIVE_CLIPBOARD_SOURCE = "iphone"
-                                print(f"Copied iPhone selection to Windows PC clipboard ({len(final_text)} chars, {len(final_text.splitlines())} lines)", flush=True)
+                                print(f"Copied iPhone selection to system clipboard ({len(final_text)} chars, {len(final_text.splitlines())} lines)", flush=True)
                         return final_text, auto_cleared
                     except Exception as err:
                         import traceback

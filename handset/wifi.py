@@ -165,19 +165,32 @@ def _local_ipv4() -> list[str]:
 
 
 def find_ip_by_mac(mac: str) -> Optional[str]:
-    """Find local IP address matching given MAC address from Windows ARP cache."""
+    """Find local IP address matching given MAC address from ARP cache."""
     if not mac:
         return None
-    target = mac.lower().replace(":", "-")
+    mac_clean = mac.lower().replace("-", ":")
+
+    # 1. Direct /proc/net/arp check on Linux
+    try:
+        with open("/proc/net/arp", "r") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 4 and parts[3].lower() == mac_clean:
+                    return parts[0]
+    except Exception:
+        pass
+
+    # 2. Fallback to arp -a CLI
     try:
         out = subprocess.check_output(["arp", "-a"], text=True, timeout=1.5)
+        for line in out.splitlines():
+            line_lower = line.lower()
+            if mac_clean in line_lower or mac_clean.replace(":", "-") in line_lower:
+                match = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
+                if match:
+                    return match.group(1)
     except Exception:
-        return None
-    for line in out.splitlines():
-        if target in line.lower():
-            match = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
-            if match:
-                return match.group(1)
+        pass
     return None
 
 
@@ -203,7 +216,7 @@ def discover_iphone_ip_on_lan(udid: Optional[str] = None, timeout: float = 0.35)
     factory MAC lookups obsolete) and multicast mDNS blocking on hidden networks.
 
     1. First tests last known IP from wifi_state.json (< 0.05s).
-    2. Tests private IPs found in Windows ARP cache in parallel (< 0.1s).
+    2. Tests private IPs found in ARP cache in parallel (< 0.1s).
     3. Scans all host IPs in the local /24 subnet via parallel TCP port 62078 probe (< 0.4s).
     4. Optionally sends unicast DNS-SD probe to wake up sleeping Wi-Fi radios.
     """
@@ -381,7 +394,7 @@ async def auto_enable_wireless_lockdown(udid: str) -> dict:
 
 def trigger_auto_enable_wireless_lockdown(udid: str) -> None:
     """Tahap 59: Permanently disabled. Automatic Wireless Lockdown & Wireless Debugging
-    cause continuous 2.4 GHz Wi-Fi chatter between iPhone and AppleMobileDeviceService.exe
+    cause continuous 2.4 GHz Wi-Fi chatter between iPhone and background sync services
     that collides with Bluetooth A2DP audio packets even when mirroring is stopped."""
     return
 
