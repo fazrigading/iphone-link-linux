@@ -96,7 +96,20 @@ class LinuxAudioManager:
         return {"ok": True, "volume": vol}
 
     def open_bluetooth_settings(self) -> Dict[str, Any]:
-        return {"ok": False, "error": "Bluetooth settings not handled on Linux in this build"}
+        candidates = [
+            ["gnome-control-center", "bluetooth"],
+            ["kcmshell6", "kcm_bluetooth"],
+            ["kcmshell5", "kcm_bluetooth"],
+            ["blueman-manager"],
+        ]
+        for cmd in candidates:
+            if _which(cmd[0]):
+                try:
+                    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    return {"ok": True, "launched": cmd[0]}
+                except Exception:
+                    pass
+        return {"ok": False, "error": "No supported Bluetooth settings manager found"}
 
     def enable(self) -> Dict[str, Any]:
         if self._controller:
