@@ -467,7 +467,7 @@ class Handler(BaseHTTPRequestHandler):
                         # Single-Pass Batch OCR: executes fast single-frame first (< 1.5s)!
                         batch_texts = extract_text_batch(frames_to_batch, save_debug=True)
 
-                        # Centralized OCR post-processing pipeline (Tahap 39/40)
+                        # Centralized OCR post-processing pipeline
                         final_text, auto_cleared = process_ocr_batch_results(batch_texts, return_meta=True)
 
                         # Save debug info

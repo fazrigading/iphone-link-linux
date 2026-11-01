@@ -1564,7 +1564,7 @@ iframe[hidden],
   justify-content: center !important;
 }
 
-/* Tahap 47 - Stealth Dim Mode & Lock/Wake UI */
+/* Stealth Dim Mode & Lock/Wake UI */
 .panel-screen-stealth {
   padding: 10px 12px;
   margin-bottom: 2px;
@@ -1629,7 +1629,7 @@ iframe[hidden],
 }
 
 /* ====================================================================== */
-/* Tahap 49 — Horizontal / Landscape Gaming & Viewing Mode */
+/* Horizontal / Landscape Gaming & Viewing Mode */
 /* ====================================================================== */
 
 .icon-btn.active,
@@ -1725,7 +1725,7 @@ iframe[hidden],
 }
 
 /* ====================================================================== */
-/* Tahap 49 V2 / 51: Responsive Compact Top Bar for Narrow Portrait Window */
+/* Responsive Compact Top Bar for Narrow Portrait Window */
 /* ====================================================================== */
 .brand,
 .app-title-area {
@@ -1887,7 +1887,7 @@ iframe[hidden],
 }
 
 /* ======================================================================
-   Tahap 52: Privacy PIN Wiper & Saweria Support Button
+   Privacy PIN Wiper & Saweria Support Button
    ====================================================================== */
 .btn-wipe-privacy {
   border: 1px solid rgba(239, 68, 68, 0.45) !important;
@@ -1939,7 +1939,7 @@ iframe[hidden],
 }
 
 /* ======================================================================
-   Tahap 52 V2: Drawer Footer Credits High-Contrast (Light & Dark Mode)
+   Drawer Footer Credits High-Contrast (Light & Dark Mode)
    ====================================================================== */
 .drawer-footer-credits {
   border-top: 1px solid var(--line);

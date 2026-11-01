@@ -22,7 +22,7 @@ const wifiState = document.querySelector("#wifi-state");
 const wifiPair = document.querySelector("#wifi-pair");
 const wifiScan = document.querySelector("#wifi-scan");
 const screenErrorBanner = document.querySelector("#screen-error-banner");
-const MIRROR_PAGE = "/mirror.html?v=20261030_tahap59_sta_pump_clean_bt";
+const MIRROR_PAGE = "/mirror.html?v=20261030_sta_pump_clean_bt";
 const MIRROR_API = "/mirror";
 let currentWifiState = {};
 
@@ -66,7 +66,7 @@ try {
   currentCrop = { ...DEFAULT_CROP };
 }
 
-// Tahap 55: Fresh-Extract Clean Slate Guard (prevents old localStorage PIN bleed across folders)
+// Fresh-Extract Clean Slate Guard (prevents old localStorage PIN bleed across folders)
 function applyCleanSlatePinGuard(settingsPayload) {
   if (!settingsPayload) return;
   const currentFolderInstanceId = String(settingsPayload.folderInstanceId || "");
@@ -773,7 +773,7 @@ document.querySelectorAll("[data-fit-choice]").forEach((btn) => {
 
 let selectedUdid = null;
 let screenTimer = 0;
-// Tahap 47: Kunci Mode Cable (USB) sebagai default connection mode yang 100% instan & stabil
+// Kunci Mode Cable (USB) sebagai default connection mode yang 100% instan & stabil
 let transport = "usb";
 let wifiPaired = [];
 let usbConnected = false;
@@ -820,7 +820,7 @@ function setTransport(value, reload = true) {
 }
 
 // ======================================================================
-// Tahap 47: iPhone Screen & Stealth Control (Wake, Lock, Stealth Dim, PIN)
+// iPhone Screen & Stealth Control (Wake, Lock, Stealth Dim, PIN)
 // ======================================================================
 const btnWakeUnlock = document.querySelector("#btn-wake-unlock");
 const btnLockIphone = document.querySelector("#btn-lock-iphone");
@@ -831,7 +831,7 @@ const btnTogglePinVisibility = document.querySelector("#btn-toggle-pin-visibilit
 const btnWipePrivacy = document.querySelector("#btn-wipe-privacy");
 let currentStealthActive = false;
 
-// Tahap 55: Keep PIN strictly empty until applyCleanSlatePinGuard verifies folderInstanceId
+// Keep PIN strictly empty until applyCleanSlatePinGuard verifies folderInstanceId
 if (inputUnlockPin) inputUnlockPin.value = "";
 try {
   if (!localStorage.getItem("iphone_link_folder_instance_id")) {
@@ -855,7 +855,7 @@ btnTogglePinVisibility?.addEventListener("click", () => {
   btnTogglePinVisibility.textContent = isPass ? "🔒" : "👁️";
 });
 
-// Tahap 52: Clean Wipe PIN & Privacy Data
+// Clean Wipe PIN & Privacy Data
 btnWipePrivacy?.addEventListener("click", async () => {
   btnWipePrivacy.disabled = true;
   btnWipePrivacy.textContent = "🗑️ Wiping Data...";
@@ -925,7 +925,7 @@ async function triggerWakeUnlockIphone() {
         screenNote.textContent = pin ? "🔓 Layar iPhone dibangunkan & PIN diinjeksi." : "🔓 Layar iPhone telah dibangunkan.";
         screenNote.className = "ok";
       }
-      // Tahap 53: Do NOT break the active stream! Send wake-stream-pli to request keyframes cleanly
+      // Do NOT break the active stream! Send wake-stream-pli to request keyframes cleanly
       try {
         screenView?.contentWindow?.postMessage({ type: "wake-stream-pli" }, "*");
       } catch (_) {}
@@ -957,7 +957,7 @@ async function triggerLockIphone() {
         screenNote.textContent = '🔒 iPhone Terkunci (Standby) — Layar fisik dimatikan. Klik "🔓 Wake / Unlock (Alt+U)" untuk membuka kembali.';
         screenNote.className = "calm-standby";
       }
-      // Tahap 53: Inform mirror iframe to hide status pill completely during locked mode
+      // Inform mirror iframe to hide status pill completely during locked mode
       try {
         screenView?.contentWindow?.postMessage({ type: "device-locked" }, "*");
       } catch (_) {}

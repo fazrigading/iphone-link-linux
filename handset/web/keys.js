@@ -351,7 +351,7 @@
           }
 
           if (isAlt && !isCtrlOrMeta) {
-            // Alt + R: Clear copy cache (Tahap 40 / 51)
+            // Alt + R: Clear copy cache
             if (e.code === "KeyR" || e.key === "r" || e.key === "R") {
               e.preventDefault();
               e.stopPropagation();
@@ -381,7 +381,7 @@
               return;
             }
 
-            // Alt + U: Wake / Unlock iPhone (Tahap 47)
+            // Alt + U: Wake / Unlock iPhone
             if (e.code === "KeyU") {
               e.preventDefault();
               e.stopPropagation();
@@ -396,7 +396,7 @@
               return;
             }
 
-            // Alt + L: Lock iPhone (Tahap 47)
+            // Alt + L: Lock iPhone
             if (e.code === "KeyL") {
               e.preventDefault();
               e.stopPropagation();
@@ -411,7 +411,7 @@
               return;
             }
 
-            // Alt + D: Toggle Stealth Dim Mode (Tahap 47)
+            // Alt + D: Toggle Stealth Dim Mode
             if (e.code === "KeyD") {
               e.preventDefault();
               e.stopPropagation();
@@ -426,7 +426,7 @@
               return;
             }
 
-            // Alt + H: Toggle Horizontal / Landscape Mode (Tahap 49)
+            // Alt + H: Toggle Horizontal / Landscape Mode
             if (e.code === "KeyH") {
               e.preventDefault();
               e.stopPropagation();

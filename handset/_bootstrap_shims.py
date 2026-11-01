@@ -1,6 +1,6 @@
 """Pre-seed pure-Python lzss & lzfse shims ONLY when native C wheels are unavailable (ImportError).
 
-Tahap 58: Always preserve native C extensions (`lzss.cp312-win_amd64.pyd` / `lzfse.cp312-win_amd64.pyd`)
+Always preserve native C extensions (`lzss.cp312-win_amd64.pyd` / `lzfse.cp312-win_amd64.pyd`)
 on Python <= 3.12 or whenever already installed. Only activate fallback shims if importing raises ImportError
 on Python 3.13+ environments without MSVC C++ Build Tools.
 """

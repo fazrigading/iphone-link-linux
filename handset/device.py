@@ -1,6 +1,5 @@
 """Status and identity reads for a plugged-in iPhone.
 
-Tahap 59:
 - Caches `HandsetInfo` (`_HANDSET_METADATA_CACHE[udid]`), `developer_mode_enabled`
   (`_DEVELOPER_MODE_CACHE[udid]`), and `driver_status()` (`_DRIVER_STATUS_CACHE`) in RAM
   so `GET /api/status` & `GET /api/devices/<udid>` take < 1ms with 0% USB TLS Lockdown

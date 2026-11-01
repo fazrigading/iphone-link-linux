@@ -5,7 +5,6 @@ holds a RemotePairing record for the phone can open the same no-admin
 userspace tunnel used for USB, just over the network. The record is created
 once over USB, where the existing Trust makes it promptless.
 
-Tahap 41:
 - Auto-Enable Wireless Lockdown (EnableWifiConnections = True) when cable is plugged in.
 - Local configuration & cache in wifi_state.json.
 - Real Network Discovery: usbmux (Network), TCP probe port 62078, ARP MAC lookup.
@@ -393,7 +392,7 @@ async def auto_enable_wireless_lockdown(udid: str) -> dict:
 
 
 def trigger_auto_enable_wireless_lockdown(udid: str) -> None:
-    """Tahap 59: Permanently disabled. Automatic Wireless Lockdown & Wireless Debugging
+    """Permanently disabled. Automatic Wireless Lockdown & Wireless Debugging
     cause continuous 2.4 GHz Wi-Fi chatter between iPhone and background sync services
     that collides with Bluetooth A2DP audio packets even when mirroring is stopped."""
     return
@@ -681,7 +680,7 @@ def probe_wifi_device(udid: str) -> dict:
 def get_wifi_status(selected_udid: Optional[str] = None, *, probe_network: bool = False) -> dict:
     """Return consolidated Wi-Fi status.
 
-    Tahap 59: When `probe_network=False` (default on `GET /api/status`), NEVER execute
+    When `probe_network=False` (default on `GET /api/status`), NEVER execute
     network probing, ARP lookups (`arp -a`), TCP port 62078 scans, or UDP mDNS packets!
     Active LAN scanning ONLY runs when `probe_network=True` (explicit Wi-Fi Scan / Probe).
     """

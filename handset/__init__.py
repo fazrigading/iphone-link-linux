@@ -55,7 +55,7 @@ def get_user_state_dir() -> Path:
     return d
 
 
-# Tahap 58: Prefer native C extensions (pylzss / lzfse .pyd) at all times.
+# Prefer native C extensions (pylzss / lzfse .pyd) at all times.
 # Only append pure-Python _shims at the very end of sys.path if native C import genuinely raises ImportError.
 try:
     import lzfse as _native_lzfse  # noqa: F401

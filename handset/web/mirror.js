@@ -370,7 +370,7 @@ document.addEventListener("pointerdown", (e) => {
   } catch (_) {}
   activePointer = e.pointerId;
   lastCoords = snapToEdge(touchCoords(e));
-  // Tahap 34: Reset OCR memory when tapping Back button (< in Notes / Keep at X < 0.22 * W && Y < 0.15 * H)
+  // Reset OCR memory when tapping Back button (< in Notes / Keep at X < 0.22 * W && Y < 0.15 * H)
   if (lastCoords.x < 14500 && lastCoords.y < 10000) {
     if (typeof window.clearOcrSessionMemory === "function") {
       window.clearOcrSessionMemory();
@@ -919,7 +919,7 @@ window.captureFullResFrameDataUrl = function () {
   return null;
 };
 
-// Tahap 56: Slim JPEG encoder (0.92) khusus untuk slot riwayat scroll agar hemat ~85% RAM
+// Slim JPEG encoder (0.92) khusus untuk slot riwayat scroll agar hemat ~85% RAM
 window.captureHistoryFrameDataUrl = function () {
   try {
     if (canvas && canvas.width > 0 && canvas.height > 0) {
@@ -931,10 +931,10 @@ window.captureHistoryFrameDataUrl = function () {
   }
 };
 
-// --- Event-Driven Visual-Change Viewport History for Long Note Stitching (Tahap 30 & Tahap 56) ---
+// --- Event-Driven Visual-Change Viewport History for Long Note Stitching ---
 const MAX_VIEWPORT_HISTORY = 6;
 window.MAX_VIEWPORT_HISTORY = MAX_VIEWPORT_HISTORY;
-window._ViewportHistory = []; // Capacity 6 snapshots (slimmed in Tahap 56), expires 180s (3 minutes)
+window._ViewportHistory = []; // Capacity 6 snapshots (slimmed in ), expires 180s (3 minutes)
 
 window.clearViewportHistory = function() {
   window._ViewportHistory = [];
@@ -1040,7 +1040,7 @@ function sampleViewportIfChanged(force = false, minInterval = 0) {
 }
 window.sampleViewportIfChanged = sampleViewportIfChanged;
 
-// Tahap 56 Zero-Stutter Audio & GPU Fix:
+//
 // Passive 900ms setInterval REMOVED so watching TikTok/video never triggers background canvas.toDataURL() stalls!
 // Snapshots are captured strictly on user interaction (wheel, pointerdown, active drag, Ctrl+A, Alt+C).
 

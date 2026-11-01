@@ -43,7 +43,7 @@ _CURRENT_TASK: asyncio.Task | None = None
 _CURRENT_LOOP: asyncio.AbstractEventLoop | None = None
 _ACTIVE_SERVER = None
 
-# Tahap 47 (Anti-Bug Edition) - Stealth Dim Mode & Remote Lock/Wake/Unlock Control
+# Stealth Dim Mode & Remote Lock/Wake/Unlock Control
 _STEALTH_DIM_ACTIVE = False
 _DEVICE_INTENTIONALLY_LOCKED = False
 _LAST_USER_INPUT_TS = time.time()
@@ -887,7 +887,7 @@ def save_typed_history() -> None:
 
 
 def _is_valid_typed_history_entry(line: str) -> bool:
-    """Validate typed history entries: forbid long paste blocks (>= 35 chars) or news headlines (Tahap 38)."""
+    """Validate typed history entries: forbid long paste blocks (>= 35 chars) or news headlines."""
     if not line:
         return True  # Keep blank line
     if len(line) >= 35:
@@ -1116,7 +1116,7 @@ def auto_correct_ocr_text(ocr_text: str) -> str:
             if c_lower == full_ocr_lower:
                 return c_strip
 
-            # Tahap 38: First letter mismatch guard
+            # First letter mismatch guard
             if c_lower[0] != full_ocr_lower[0]:
                 ocr_w0 = full_ocr_lower.split()[0] if full_ocr_lower.split() else ""
                 cand_w0 = c_lower.split()[0] if c_lower.split() else ""
@@ -1152,7 +1152,7 @@ def auto_correct_ocr_text(ocr_text: str) -> str:
             return best_cand
 
     # --- Priority 3: Line-by-line correction strictly preserving empty lines ---
-    # Tahap 35 Perbaikan 4: Check if other lines in raw_lines match typed buffer
+    # Check if other lines in raw_lines match typed buffer
     other_lines_matching_buffer = 0
     for l in raw_lines:
         if not l.strip():
@@ -1182,7 +1182,7 @@ def auto_correct_ocr_text(ocr_text: str) -> str:
             continue
         l_lower = c_line.lower()
 
-        # Contextual Prefix Recovery for short text (Tahap 35 Perbaikan 4):
+        # Contextual Prefix Recovery for short text:
         # E.g. "the" is a word prefix of "the beatles" in _TYPED_LINES_BUFFER,
         # and other lines match buffer ("pamungkas kenangan manis", "barasuara", "hindia")
         prefix_cand = None
@@ -1211,7 +1211,7 @@ def auto_correct_ocr_text(ocr_text: str) -> str:
             c_lower = c_strip.lower()
             c_words = c_lower.split()
 
-            # Dynamic threshold (Tahap 35): 0.72 for words with same first and last letter and abs len diff <= 2
+            # Dynamic threshold: 0.72 for words with same first and last letter and abs len diff <= 2
             is_same_endpoints = (
                 len(c_lower) >= 4 and len(l_lower) >= 4
                 and c_lower[0] == l_lower[0] and c_lower[-1] == l_lower[-1]
@@ -1222,7 +1222,7 @@ def auto_correct_ocr_text(ocr_text: str) -> str:
             if len(c_line) >= 5 and not _is_length_comparable(c_strip, c_line) and not is_same_endpoints:
                 continue
 
-            # First letter mismatch safety guard (Tahap 38):
+            # First letter mismatch safety guard:
             # If first character differs, require sentence ratio >= 0.84 AND first word ratio >= 0.70
             # E.g. "Dapua raya selatan" vs "papua raya selatan" (w0 ratio 0.80 >= 0.70, sent ratio 0.94 >= 0.84) allowed!
             if c_lower[0] != l_lower[0]:
@@ -1263,7 +1263,7 @@ _LAST_SELECTION_COLOR: str | None = None
 
 
 def clear_recent_long_ocr_chunks() -> None:
-    """Clear session OCR chunk memory, selection color, and temporary typed line buffers (Tahap 32/40/51)."""
+    """Clear session OCR chunk memory, selection color, and temporary typed line buffers."""
     global _RECENT_LONG_OCR_CHUNKS, _LAST_SELECTION_COLOR, _CURRENT_TYPED_LINE, _TYPED_LINES_BUFFER
     with _CHUNKS_LOCK:
         _RECENT_LONG_OCR_CHUNKS.clear()
@@ -1273,7 +1273,7 @@ def clear_recent_long_ocr_chunks() -> None:
 
 
 def wipe_all_privacy_data() -> dict:
-    """Wipe all sensitive in-memory buffers and delete sensitive local cache/history files on disk (Tahap 52)."""
+    """Wipe all sensitive in-memory buffers and delete sensitive local cache/history files on disk."""
     global _RECENT_LONG_OCR_CHUNKS, _LAST_SELECTION_COLOR, _CURRENT_TYPED_LINE, _TYPED_LINES_BUFFER
     with _CHUNKS_LOCK:
         _RECENT_LONG_OCR_CHUNKS.clear()
@@ -1349,7 +1349,7 @@ def _is_notes_folder_list_frame(lines: list[str] | str) -> bool:
 
 def _strip_typed_buffer_contamination_from_top(lines: list[str]) -> list[str]:
     """
-    LAPIS 3 (Tahap 33 & Tahap 38): For long text (>= 6 lines), strip contaminated top lines
+    LAPIS 3: For long text (>= 6 lines), strip contaminated top lines
     (e.g. old short note titles like 'banten feeds test 17 pro' or 'banten feeds iphone 17 pro')
     that match entries in the user's typed history buffer or Notes list preview items.
     STRICT SAFETY RULE: DILARANG KERAS menghapus baris pertama lines[0] jika lines[0] adalah
@@ -1380,7 +1380,7 @@ def _strip_typed_buffer_contamination_from_top(lines: list[str]) -> list[str]:
         if top_line.startswith("#") or re.search(r'(\.|\)\.|\]\.|\"\.|\'\.|\?|!)$', top_line):
             break
 
-        # Tahap 38: Check if lines[0] connects to lines[1] (continuation of sentence)
+        # Check if lines[0] connects to lines[1] (continuation of sentence)
         if len(non_empty_res) >= 2:
             next_line = non_empty_res[1].strip()
             # If top line is long (>= 30) and next line starts with lowercase letter, it is a flowing paragraph!
@@ -1414,7 +1414,7 @@ def _strip_typed_buffer_contamination_from_top(lines: list[str]) -> list[str]:
                 is_contamination = True
 
         if is_contamination:
-            print(f"[Tahap 38] Stripped top contaminated line: '{result[0]}'", flush=True)
+            print(f"Stripped top contaminated line: '{result[0]}'", flush=True)
             result.pop(0)
         else:
             break
@@ -1425,7 +1425,7 @@ def _strip_typed_buffer_contamination_from_top(lines: list[str]) -> list[str]:
 def _strip_top_unselected_debris(lines: list[str]) -> list[str]:
     """
     Strip unselected separator lines (---) and hashtag lines that appear BEFORE
-    the first main news body paragraph (Tahap 35 Perbaikan 2).
+    the first main news body paragraph.
     E.g. #toltangerangmerak #infotangerang followed by --- above 'Unggahan bertajuk...'.
     """
     if not lines or len(lines) < 2:
@@ -1508,15 +1508,15 @@ def _is_garbage_ocr_line(text: str) -> bool:
     if len(tokens) <= 3 and any(p == t_low for p in ["cat aku", "kamu aku", "kamu aku ya"]):
         return True
 
-    # iOS popup callout border phantom characters (Tahap 34: e.g. "1Q0 1O0O", "100 1000", "1Q0", "1O0O")
+    # iOS popup callout border phantom characters
     if re.match(r'^[0-9OQIl\s]{3,15}$', t):
         return True
 
-    # iOS popup callout border edge fragments (Tahap 38: e.g. "r I", "I I", "r l", "| I", "r |", "r")
+    # iOS popup callout border edge fragments
     if re.match(r'^[rIl1|/\[\]\(\)\-]{1,2}(\s+[rIl1|/\[\]\(\)\-]{1,2})*$', t):
         return True
 
-    # Debris lines with bullet/middle-dot symbols (Tahap 40: e.g. "•a•y", "• y", "·a")
+    # Debris lines with bullet/middle-dot symbols
     if len(t) < 8 and ('•' in t or '·' in t):
         return True
 
@@ -1547,16 +1547,16 @@ def _clean_ocr_line(line: str) -> str:
     # Strip trailing orphan single digit after uppercase acronym (e.g. "KMP 4" -> "KMP")
     t = re.sub(r'\b([A-Z]{2,})\s+[0-9]$', r'\1', t)
 
-    # Auto-correct edge-truncated words due to AssistiveTouch (Tahap 29)
+    # Auto-correct edge-truncated words due to AssistiveTouch
     t = re.sub(r'\btali evakua$', 'tali evakuasi', t)
     t = re.sub(r'\bmemperlih$', 'memperlihatkan', t)
 
-    # Fix selection handle occlusion & OCR typos (Tahap 30 & Tahap 34)
+    # Fix selection handle occlusion & OCR typos
     t = re.sub(r'(?:^|\b)tik-detik\b', 'detik-detik', t)
     t = re.sub(r'\b(?:i1wa|j1wa|ilwa|jiw4)\b', 'jiwa', t)
     t = re.sub(r'\bmemaksa(?:opng|\s+pa)\b', 'memaksa para penumpang', t, flags=re.IGNORECASE)
 
-    # --- Optical OCR Artifacts Normalization (Tahap 31 & Tahap 34) ---
+    # --- Optical OCR Artifacts Normalization ---
     # a. Restoration of letter "k" from "l<" / "I<" / "1<" / "|<"
     loop_count = 0
     while loop_count < 10 and re.search(r'(?<=[A-Za-z0-9_@])[lI1|]<|[lI1|]<(?=[A-Za-z0-9_.,!?\s]|$)', t):
@@ -1581,7 +1581,7 @@ def _clean_ocr_line(line: str) -> str:
     t = re.sub(r'#kmpbaturnandi\b', '#kmpbatumandi', t, flags=re.IGNORECASE)
     t = re.sub(r'#baturnandi\b', '#batumandi', t, flags=re.IGNORECASE)
 
-    # e. Restoration of optical defect "hincfia" -> "hindia" (Tahap 35)
+    # e. Restoration of optical defect "hincfia" -> "hindia"
     t = re.sub(r'\bhincfia\b', 'hindia', t, flags=re.IGNORECASE)
 
     # f. Strip stray trailing < or | or ! on handles if any
@@ -1590,37 +1590,37 @@ def _clean_ocr_line(line: str) -> str:
     # g. Restoration of en-dash in route names (e.g. "Merak–Jakarta") from mojibake/quotes
     t = re.sub(r'\bMerak\S+?Jakarta\b', 'Merak–Jakarta', t)
 
-    # h. Strip stray trailing selection handle brackets/pipes on hashtags (Tahap 38: e.g. #cilegon] -> #cilegon, #infotangerang| -> #infotangerang)
+    # h. Strip stray trailing selection handle brackets/pipes on hashtags
     t = re.sub(r'(#[A-Za-z0-9_]+)[\]\[\|><\)\}!]+(?=\s|$)', r'\1', t)
 
-    # i. Restoration of "(AI Generated Content)" from OCR typo "(Al Generated Content)" (Tahap 38)
+    # i. Restoration of "(AI Generated Content)" from OCR typo "(Al Generated Content)"
     t = re.sub(r'\(\s*Al\s+Generated\s+Content\s*\)', '(AI Generated Content)', t)
     t = re.sub(r'\bAl\s+Generated\b', 'AI Generated', t)
 
-    # j. Direct optical restoration of "Dapua" -> "papua" (Tahap 38)
+    # j. Direct optical restoration of "Dapua" -> "papua"
     t = re.sub(r'\b[Dd]apua\b', 'papua', t)
 
-    # k. Optical restoration of "Iambung" -> "lambung" & capital "I" mistranscriptions of lowercase "l" at word start (Tahap 39)
+    # k. Optical restoration of "Iambung" -> "lambung" & capital "I" mistranscriptions of lowercase "l" at word start
     t = re.sub(r'\bI(?=(?:ambung|angkah|angsung|agi|ain|alu|ebih|intas|aut|epas|uka|oket|okasi|aporan|embar|ingkungan|uar)\b)', 'l', t)
     t = re.sub(r'\bIambung\b', 'lambung', t)
 
-    # l. Capital 'I' mistranscription of lowercase 'l' at end of lowercase word (Tahap 40: e.g. "awak KapaI" -> "awak kapal")
+    # l. Capital 'I' mistranscription of lowercase 'l' at end of lowercase word
     t = re.sub(r'(?<=[a-z])I\b', 'l', t)
     t = re.sub(r'\bawak\s+Kapa[Il]\b', 'awak kapal', t, flags=re.IGNORECASE)
 
-    # m. Restore @wisnutry017 -> @wisnutryo17 (Tahap 40)
+    # m. Restore @wisnutry017 -> @wisnutryo17
     t = re.sub(r'@wisnutry017\b', '@wisnutryo17', t)
 
-    # n. Restore clipped descender hashtags (Tahap 40: #iakartarunninafestival -> #jakartarunningfestival, #irf2026 -> #jrf2026)
+    # n. Restore clipped descender hashtags
     t = re.sub(r'#iakartarunninafestival\b', '#jakartarunningfestival', t, flags=re.IGNORECASE)
     t = re.sub(r'#irf2026\b', '#jrf2026', t, flags=re.IGNORECASE)
     t = re.sub(r'#iakarta\b', '#jakarta', t, flags=re.IGNORECASE)
     t = re.sub(r'#irf\b', '#jrf', t, flags=re.IGNORECASE)
 
-    # o. Optical restoration of "!olom" -> "kolom" (Tahap 40: e.g. "di !olom komentar" -> "di kolom komentar")
+    # o. Optical restoration of "!olom" -> "kolom"
     t = re.sub(r'(?<=\s)!olom\b|^!olom\b', 'kolom', t, flags=re.IGNORECASE)
 
-    # p. Strip stray noise underscores on ordinary words (Tahap 48 V2: e.g. "aksi _heroik" -> "aksi heroik")
+    # p. Strip stray noise underscores on ordinary words
     t = re.sub(r'(?<![@#A-Za-z0-9])_+(?=[A-Za-z])|(?<=[A-Za-z])_+(?![A-Za-z0-9])', '', t)
 
     return t
@@ -1647,7 +1647,7 @@ def _line_optical_defect_penalty(line: str) -> int:
         penalty += 5
     if re.search(r'(?<=[a-z])[O0](?=[a-z]|\b)', line):
         penalty += 5
-    # Penalize stray noise underscore outside @mention or #hashtag (Tahap 48 V2)
+    # Penalize stray noise underscore outside @mention or #hashtag
     clean_no_tags = re.sub(r'[@#][A-Za-z0-9_.]+', '', line)
     if '_' in clean_no_tags:
         penalty += 25
@@ -1659,7 +1659,7 @@ def _pick_cleaner_line(line1: str, line2: str) -> str:
     l1_clean = _clean_ocr_line(line1)
     l2_clean = _clean_ocr_line(line2)
 
-    # Prioritize line without stray noise underscores (Tahap 48 V2)
+    # Prioritize line without stray noise underscores
     has_u1 = bool(re.search(r'(?<![@#A-Za-z0-9])_+(?=[A-Za-z])|(?<=[A-Za-z])_+(?![A-Za-z0-9])', line1))
     has_u2 = bool(re.search(r'(?<![@#A-Za-z0-9])_+(?=[A-Za-z])|(?<=[A-Za-z])_+(?![A-Za-z0-9])', line2))
     if has_u2 and not has_u1:
@@ -1667,7 +1667,7 @@ def _pick_cleaner_line(line1: str, line2: str) -> str:
     if has_u1 and not has_u2:
         return l2_clean
 
-    # Prioritize line with fewer optical defects (Tahap 31)
+    # Prioritize line with fewer optical defects
     p1 = _line_optical_defect_penalty(line1)
     p2 = _line_optical_defect_penalty(line2)
     if p1 < p2:
@@ -1675,13 +1675,13 @@ def _pick_cleaner_line(line1: str, line2: str) -> str:
     if p2 < p1:
         return l2_clean
 
-    # Prioritize complete "detik-detik" over truncated "tik-detik" (Tahap 30)
+    # Prioritize complete "detik-detik" over truncated "tik-detik"
     if "detik-detik" in l1_clean and "detik-detik" not in l2_clean:
         return l1_clean
     if "detik-detik" in l2_clean and "detik-detik" not in l1_clean:
         return l2_clean
 
-    # Prioritize clean "jiwa" over OCR typo "i1wa" (Tahap 30)
+    # Prioritize clean "jiwa" over OCR typo "i1wa"
     if "jiwa" in l1_clean and "jiwa" not in l2_clean:
         return l1_clean
     if "jiwa" in l2_clean and "jiwa" not in l1_clean:
@@ -1693,7 +1693,7 @@ def _pick_cleaner_line(line1: str, line2: str) -> str:
         return l1_clean
 
     # If one line ends with a truncated word of the other line (e.g. "evakua" vs "evakuasi"),
-    # WAJIB pick the line with the complete/longer word (Tahap 29)!
+    # WAJIB pick the line with the complete/longer word!
     w1 = l1_clean.split()
     w2 = l2_clean.split()
     if w1 and w2:
@@ -1710,7 +1710,7 @@ def _pick_cleaner_line(line1: str, line2: str) -> str:
 
 def _unsplit_broken_lines(lines: list[str]) -> list[str]:
     """
-    Broken Word Un-splitter (Tahap 29):
+    Broken Word Un-splitter:
     If a line is followed by a short line containing only 1 small word fragment
     (1-6 lowercase letters like 'atkan', 'si', 'nya', 'kan'), merge it back onto the previous line.
     E.g. '... yang memperlih' + 'atkan' -> '... yang memperlihatkan'.
@@ -1757,7 +1757,7 @@ def _unsplit_broken_lines(lines: list[str]) -> list[str]:
 
 def _is_generic_template_line(line: str) -> bool:
     """
-    Check if a line is a generic social media template line (Tahap 34).
+    Check if a line is a generic social media template line.
     These template lines are forbidden from serving as the sole anchor connecting two different notes/apps.
     """
     if not line:
@@ -1776,7 +1776,7 @@ def _is_generic_template_line(line: str) -> bool:
 
 def _score_gap_quality(gap_lines: list[str]) -> int:
     """
-    Score OCR gap quality between anchors (Tahap 34).
+    Score OCR gap quality between anchors.
     Heavy penalty for balloon border phantom digits/letters ("1Q0 1O0O"),
     broken words ("memaksaopng", "memaksa pa"), and optical defects ("l<").
     """
@@ -1805,7 +1805,7 @@ def _score_gap_quality(gap_lines: list[str]) -> int:
 
 def _complete_usernames(text: str) -> str:
     """
-    Self-Consistent @Username Completion (Tahap 34 & Tahap 35):
+    Self-Consistent @Username Completion:
     If the document has a full mention like '@erikkristian' or '@andribotox' in Paragraph 2,
     and another line (e.g. Source line) has a truncated mention or handle occluded by selection handle
     (e.g. '@andriboto<', '@andriboto|', '@erikkrist', '@eril<l<rist', '@erikkri'),
@@ -1825,7 +1825,7 @@ def _complete_usernames(text: str) -> str:
 
     result = norm_text
 
-    # 1. First, catch mentions with trailing defect characters like <, |, ! (Tahap 35: @andriboto< -> @andribotox)
+    # 1. First, catch mentions with trailing defect characters like <, |, !
     defect_mentions = set(re.findall(r'@[A-Za-z0-9_.]+[<|!]+', result))
     for raw_m in defect_mentions:
         clean_pfx = re.sub(r'[<|!]+$', '', raw_m)
@@ -1865,7 +1865,7 @@ def _is_body_sentence_line(line: str) -> bool:
 
 
 def has_overlapping_body_line(lines_a: list[str], lines_b: list[str]) -> bool:
-    """Check if lines_a and lines_b share at least 1 non-generic body sentence (Tahap 37 Anti-Leak Rule)."""
+    """Check if lines_a and lines_b share at least 1 non-generic body sentence."""
     if not lines_a or not lines_b:
         return False
     body_a = [l.strip() for l in lines_a if _is_body_sentence_line(l)]
@@ -1884,7 +1884,7 @@ def has_overlapping_body_line(lines_a: list[str], lines_b: list[str]) -> bool:
 
 def merge_two_overlapping_blocks(linesA: list[str], linesB: list[str]) -> list[str] | None:
     """
-    Gap-Filling Segment Stitcher (Tahap 28 & Tahap 34):
+    Gap-Filling Segment Stitcher:
     Identifies matching anchor pairs, detects alignment direction, fills in occluded
     gaps between anchors with quality scoring (e.g. restoring lines covered by iOS Cut/Copy/Paste balloon),
     cleans orphan digits, and clamps tail to clean content.
@@ -1925,7 +1925,7 @@ def merge_two_overlapping_blocks(linesA: list[str], linesB: list[str]) -> list[s
     if not matches:
         return None
 
-    # Tahap 34: Validate that matching pairs contain at least ONE specific body line match
+    # Validate that matching pairs contain at least ONE specific body line match
     # DILARANG menyambungkan linesA dan linesB jika anchor yang cocok HANYA baris template umum!
     has_specific_body_anchor = False
     for i, j, sm_ratio, _ in matches:
@@ -2020,7 +2020,7 @@ def merge_two_overlapping_blocks(linesA: list[str], linesB: list[str]) -> list[s
     tailA = cleanA[last_i + 1 :]
     tailB = cleanB[last_j + 1 :]
 
-    # Tahap 35 Perbaikan 3B: If one block contains #hashtags and the other does not,
+    # If one block contains #hashtags and the other does not,
     # the tail MUST preserve the hashtag-bearing tail (e.g. bottom frame tail continuing below top frame)!
     has_hashtag_A = any(l.strip().startswith("#") for l in cleanA)
     has_hashtag_B = any(l.strip().startswith("#") for l in cleanB)
@@ -2122,7 +2122,7 @@ def stitch_two_ocr_texts(text1: str, text2: str) -> str:
         if best_match and best_score >= 0.90:
             break
 
-    # Tahap 34: HAPUS fallback non-overlapping lines1 + lines2!
+    # HAPUS fallback non-overlapping lines1 + lines2!
     # If no valid overlapping body match is found, DO NOT concatenate different notes/apps! Return current frame t2_clean.
     if not best_match:
         return t2_clean
@@ -2137,12 +2137,12 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
     """
     Stitch multiple chronologically ordered OCR frames into a seamless single multi-paragraph text
     with preserved paragraph spacing (\\r\\n\\r\\n).
-    Rejects Notes Folder List frames, locks DOC_START below date header, and prevents contamination (Tahap 32).
+    Rejects Notes Folder List frames, locks DOC_START below date header, and prevents contamination.
     """
     if not texts:
         return ""
 
-    # Detect if any frame is a Notes folder list frame (Tahap 32 Bug 1)
+    # Detect if any frame is a Notes folder list frame
     has_folder_list = any(_is_notes_folder_list_frame(t) for t in texts)
     if has_folder_list:
         clear_recent_long_ocr_chunks()
@@ -2188,12 +2188,12 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
     curr_raw = _strip_top_unselected_debris(curr_raw)
     curr_lines = _unsplit_broken_lines(curr_raw)
 
-    # ATURAN EMAS 1 (Tahap 36): Short text (<= 5 non-empty lines, total chars < 200) -> NEVER stitch with history!
+    # ATURAN EMAS 1: Short text (<= 5 non-empty lines, total chars < 200) -> NEVER stitch with history!
     is_short_snippet = (len(curr_lines) <= 5 and all(len(l) < 55 for l in curr_lines) and sum(len(l) for l in curr_lines) < 200)
     if is_short_snippet:
         return curr_frame
 
-    # Middle paragraph opener regex (Tahap 35 Perbaikan 3A)
+    # Middle paragraph opener regex
     # These phrases can NEVER qualify as the opening of the document!
     middle_para_opener_re = re.compile(
         r'^(momen\s+menegangkan|situasi\s+darurat|dalam\s+unggahan|konten\s+tersebut|fenomena\s+ini|seluruh\s+\d+|bagaimana\s+(perasaan|tanggapan|menurut)|source\s*:|sumber\s*:)',
@@ -2202,7 +2202,7 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
     first_line_clean = curr_lines[0] if curr_lines else ""
     is_middle_para = bool(middle_para_opener_re.match(first_line_clean))
 
-    # Check if current frame already contains a complete single-screen text (Tahap 36 Golden Rule 2)
+    # Check if current frame already contains a complete single-screen text
     has_closing = any(l.startswith("#") for l in curr_lines[-2:]) if len(curr_lines) >= 2 else False
     if doc_start_norm:
         has_body_start = (_normalize_line_for_match(first_line_clean) == doc_start_norm)
@@ -2229,7 +2229,7 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
             continue
         merged = merge_two_overlapping_blocks(prev_lines, current_lines)
         if not merged:
-            # Bidirectional fallback (Tahap 39): if user scrolled up to note top after viewing note bottom
+            # Bidirectional fallback: if user scrolled up to note top after viewing note bottom
             merged = merge_two_overlapping_blocks(current_lines, prev_lines)
         if merged:
             current_lines = merged
@@ -2253,9 +2253,9 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
                     current_lines = current_lines[idx:]
                 break
 
-    # LAPIS 3 (Tahap 33): Strip typed buffer contamination from top of long text
+    # LAPIS 3: Strip typed buffer contamination from top of long text
     current_lines = _strip_typed_buffer_contamination_from_top(current_lines)
-    # Tahap 35 Perbaikan 2: Strip unselected top hashtags/separators
+    # Strip unselected top hashtags/separators
     current_lines = _strip_top_unselected_debris(current_lines)
 
     # If long note (>= 4 lines), check and merge with session chunk memory (_RECENT_LONG_OCR_CHUNKS)
@@ -2265,7 +2265,7 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
             _RECENT_LONG_OCR_CHUNKS[:] = [c for c in _RECENT_LONG_OCR_CHUNKS if (now - c["ts"]) <= 90.0]
 
             for past in reversed(_RECENT_LONG_OCR_CHUNKS):
-                # Tahap 37 Anti-Leak: MUST share at least 1 genuine body sentence with current frame!
+                # Leak: MUST share at least 1 genuine body sentence with current frame!
                 if not has_overlapping_body_line(past["lines"], current_lines):
                     continue
                 hist_merged = merge_two_overlapping_blocks(past["lines"], current_lines)
@@ -2309,7 +2309,7 @@ def stitch_multiline_ocr_frames(texts: list[str]) -> str:
 
 def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = None) -> str:
     """
-    Final Paragraph Formatter (Tahap 32 & Tahap 33):
+    Final Paragraph Formatter:
     Called AS THE VERY LAST STEP before sending to system clipboard.
     Guarantees clean double newlines (\\r\\n\\r\\n) between paragraphs and single newlines (\\r\\n) within paragraphs and hashtags.
     Strictly forbids fake double newlines (\\r\\n\\r\\n) mid-sentence for long text!
@@ -2319,7 +2319,7 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
         return ""
 
     raw_lines = [l.strip() for l in text.splitlines()]
-    # Tahap 35: Strip top unselected debris and typed buffer contamination BEFORE indexing has_blank_after!
+    # Strip top unselected debris and typed buffer contamination BEFORE indexing has_blank_after!
     raw_lines = _strip_top_unselected_debris(raw_lines)
     raw_lines = _strip_typed_buffer_contamination_from_top(raw_lines)
 
@@ -2368,7 +2368,7 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
     is_long_text = len(non_empty_lines) > 6
 
     if is_short_text:
-        # Cross-reference _TYPED_LINES_BUFFER: check if user typed double Enter between lines (Tahap 38)
+        # Cross-reference _TYPED_LINES_BUFFER: check if user typed double Enter between lines
         with _TYPED_BUFFER_LOCK:
             buf = list(_TYPED_LINES_BUFFER)
         for idx in range(len(non_empty_lines) - 1):
@@ -2415,11 +2415,11 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
             is_para_end = False
 
             if is_short_text:
-                # Tahap 33 & Tahap 38: For short text (<= 6 non-empty lines), 100% preserve all blank lines!
+                # For short text (<= 6 non-empty lines), 100% preserve all blank lines!
                 if i in has_blank_after or (raw_para_breaks and (norm_curr in raw_para_breaks or any(norm_curr in b or b in norm_curr for b in raw_para_breaks))):
                     is_para_end = True
             else:
-                # Long text rules (Tahap 32 & Tahap 34 & Tahap 40)
+                # Long text rules
                 # Rule 4: Between consecutive hashtag lines, STRICTLY FORBIDDEN to insert blank line!
                 if is_curr_hashtag and is_next_hashtag:
                     is_para_end = False
@@ -2438,7 +2438,7 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
                     )
 
                     if has_sentence_end:
-                        # Rule 2A (Tahap 34 & Tahap 40): If sentence has terminal punct AND OCR has blank line AND next starts with capital
+                        # Rule 2A: If sentence has terminal punct AND OCR has blank line AND next starts with capital
                         if has_blank and is_next_capital:
                             is_para_end = True
                         # Rule 2B: Known section openers
@@ -2463,9 +2463,9 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
                 output_lines.append("")
 
     joined = "\r\n".join(output_lines)
-    # Self-Consistent @Username Completion (Tahap 34)
+    # Self-Consistent @Username Completion
     joined = _complete_usernames(joined)
-    # Multi-line / cross-line OCR optical restoration (Tahap 38)
+    # Multi-line / cross-line OCR optical restoration
     joined = re.sub(r'\(\s*Al\s+Generated\s+Content\s*\)', '(AI Generated Content)', joined, flags=re.IGNORECASE)
     joined = re.sub(r'\bAl\s+Generated\b', 'AI Generated', joined)
     # Normalize line endings
@@ -2477,7 +2477,7 @@ def ensure_paragraph_formatting(text: str, raw_para_breaks: set[str] | None = No
 
 def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False) -> str | None | tuple[str | None, bool]:
     """
-    Centralized OCR Batch Post-Processing Pipeline (Tahap 39 & Tahap 40).
+    Centralized OCR Batch Post-Processing Pipeline.
     Called directly by handset/server.py and test suites to guarantee 100% identical execution.
     - Handles short snippets (<= 6 lines, total chars < 220) preserving double Enter (\\r\\n\\r\\n).
     - Checks 1-screen complete caption (requiring #hashtag at end) to prevent premature truncation.
@@ -2488,12 +2488,12 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
     if not batch_texts:
         return (None, False) if return_meta else None
 
-    # Detect if any frame is a Notes folder list frame (Tahap 32 & Tahap 33)
+    # Detect if any frame is a Notes folder list frame
     has_folder_list = any(_is_notes_folder_list_frame(t) or "<<<NOTES_LIST_VIEW>>>" in t for t in batch_texts)
     if has_folder_list:
         clear_recent_long_ocr_chunks()
 
-    # Track selection color and flush cache if switching apps/notes with different highlight color (Tahap 40)
+    # Track selection color and flush cache if switching apps/notes with different highlight color
     global _LAST_SELECTION_COLOR
     current_color = "none"
     for bt in reversed(batch_texts):
@@ -2510,7 +2510,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
     if current_color in ("yellow", "blue"):
         _LAST_SELECTION_COLOR = current_color
 
-    # Extract raw paragraph break markers before stripping blank lines (Tahap 40 Bug 3)
+    # Extract raw paragraph break markers before stripping blank lines
     raw_para_breaks: set[str] = set()
     for bt in batch_texts:
         if not bt or not bt.strip():
@@ -2524,13 +2524,13 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
                 if norm_l:
                     raw_para_breaks.add(norm_l)
 
-    # ANTI-LEAK RULE 1 (Tahap 37): Current frame is ALWAYS the primary source!
+    # ANTI-LEAK RULE 1: Current frame is ALWAYS the primary source!
     current_frame_raw = batch_texts[-1].strip()
     if not current_frame_raw or _is_notes_folder_list_frame(current_frame_raw) or current_frame_raw == "<<<NOTES_LIST_VIEW>>>":
         if current_color in ("yellow", "blue"):
             fb = get_recent_typed_single_line_fallback(max_age_sec=30.0)
             if fb:
-                print(f"[Tahap 48 V2] Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
+                print(f"Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
                 return (fb, False) if return_meta else fb
         return (None, False) if return_meta else None
 
@@ -2541,7 +2541,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
         if current_color in ("yellow", "blue"):
             fb = get_recent_typed_single_line_fallback(max_age_sec=30.0)
             if fb:
-                print(f"[Tahap 48 V2] Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
+                print(f"Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
                 return (fb, False) if return_meta else fb
         return (None, False) if return_meta else None
 
@@ -2551,11 +2551,11 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
         if current_color in ("yellow", "blue"):
             fb = get_recent_typed_single_line_fallback(max_age_sec=30.0)
             if fb:
-                print(f"[Tahap 48 V2] Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
+                print(f"Recovered 1-line selection from recent typing buffer: '{fb}'", flush=True)
                 return (fb, False) if return_meta else fb
         return (None, False) if return_meta else None
 
-    # Discard partially clipped/damaged bottom line at toolbar edge (Tahap 40 Bug 4 - only if >= 4 lines)
+    # Discard partially clipped/damaged bottom line at toolbar edge
     if len(c_lines) >= 4:
         last_l = c_lines[-1]
         if not last_l.startswith("#") and re.search(r'\b(ccrta|dilanorkan|hcrhacil|kcrhacil)\b', last_l, re.IGNORECASE):
@@ -2563,7 +2563,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
             if raw_frame_lines and raw_frame_lines[-1] == last_l:
                 raw_frame_lines.pop()
 
-    # ATURAN EMAS 1 (Tahap 36/37/38/39/40/48 V2): Short text & Single-line fast-path
+    # ATURAN EMAS 1: Short text & Single-line fast-path
     if len(c_lines) == 1:
         cleaned_1line = _clean_ocr_line(c_lines[0]).strip()
         if cleaned_1line:
@@ -2599,7 +2599,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
     )
     is_complete_single_screen = (has_hashtag_end and has_body_start and len(c_lines) >= 6)
 
-    # Session Chunk Continuity (Tahap 40 Bug 4):
+    # Session Chunk Continuity:
     # If user copied Top of note earlier (< 75s ago, same color), and now copied Bottom of note, connect them!
     now = time.time()
     with _CHUNKS_LOCK:
@@ -2641,7 +2641,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
     if len(batch_texts) <= 1 or (is_complete_single_screen and _score_gap_quality(c_lines) >= 0):
         final_text = auto_correct_ocr_text(current_frame_text)
     else:
-        # ANTI-LEAK RULE 2 (Tahap 37): Filter history frames!
+        # ANTI-LEAK RULE 2: Filter history frames!
         valid_history = []
         for ht in batch_texts[:-1]:
             if not ht or not ht.strip() or _is_notes_folder_list_frame(ht) or "<<<NOTES_LIST_VIEW>>>" in ht:
@@ -2662,7 +2662,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
 
     final_text = ensure_paragraph_formatting(final_text, raw_para_breaks=raw_para_breaks)
 
-    # Smart Auto-Clear (Tahap 40 Feature 5):
+    # Smart Auto-Clear:
     # Once complete caption (>= 5 lines, body start, ending with #hashtag) is obtained,
     # flush _RECENT_LONG_OCR_CHUNKS so the next copy starts clean!
     final_non_empty = [l for l in final_text.splitlines() if l.strip()]
@@ -2685,7 +2685,7 @@ def process_ocr_batch_results(batch_texts: list[str], return_meta: bool = False)
 
 def get_recent_typed_single_line_fallback(max_age_sec: float = 30.0) -> str | None:
     """
-    Fallback for 1-line selection (Tahap 48 V2):
+    Fallback for 1-line selection:
     If user typed a line within < max_age_sec (e.g. 30s) and highlighted it,
     return that line if OCR returned empty despite selection color.
     """
@@ -2751,7 +2751,7 @@ def type_text_to_iphone(text: str) -> int:
                 else:
                     continue
 
-            # Multi-Step Shift Latching (Tahap 53): prevents iOS race condition where '?' typed as '/'
+            # Multi-Step Shift Latching: prevents iOS race condition where '?' typed as '/'
             needs_shift = len(usages) >= 2 and usages[0] == 0xE1
             keycode = usages[-1]
 
