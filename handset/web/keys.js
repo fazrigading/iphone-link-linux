@@ -292,7 +292,7 @@
 
           // Pure Internal iPhone Shortcuts via Ctrl/Cmd (Zero-Delay, Native iOS):
           if (isCtrlOrMeta && !isAlt) {
-            // Ctrl + C: Instant native iOS Copy (Cmd+C, skip OCR, keep Windows clipboard intact)
+            // Ctrl + C: Instant native iOS Copy (Cmd+C, skip OCR, keep system clipboard intact)
             if (e.code === "KeyC") {
               e.preventDefault();
               e.stopPropagation();

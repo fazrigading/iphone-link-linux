@@ -19,8 +19,8 @@
   --ok: #6ccb5f;
   --warn: #fce100;
   --bad: #ff99a4;
-  --font: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, sans-serif;
-  --mono: 'Cascadia Code', 'Segoe UI Mono', ui-monospace, monospace;
+  --font: system-ui, -apple-system, Cantarell, Inter, sans-serif;
+  --mono: 'Intel One Mono', ui-monospace, monospace;
 }
 
 [data-theme="light"],

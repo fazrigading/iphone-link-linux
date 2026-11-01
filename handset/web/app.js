@@ -582,8 +582,8 @@ function initKeyboardSettingsControls() {
         else window._ViewportHistory = [];
       }
       if (res?.text) {
-        // Server has already written text directly to Windows PC clipboard via set_windows_clipboard_text().
-        // Do NOT call navigator.clipboard.writeText() to avoid changing Windows clipboard sequence number!
+        // Server has already written text directly to system clipboard via backend clipboard helper.
+        // Do NOT call navigator.clipboard.writeText() to avoid changing clipboard sequence number!
         if (btnCopyIphone) btnCopyIphone.textContent = "✓ Copied to PC!";
       } else {
         if (btnCopyIphone) btnCopyIphone.textContent = "✓ Copied (iOS)";
