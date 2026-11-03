@@ -4,9 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iphone-link-linux"
-version = "1.0.0"
-authors = [{ name = "Fazri Gading", email = "fazrigading@gmail.com" }]
-description = "iPhone Link Linux - Native iPhone Mirroring and Control for Linux"
+version = "1.1.0"
+authors = [
+    { name = "Fazri Gading", email = "fazrigading@gmail.com" },
+    { name = "Kelvin Daniyar", email = "kelvindaniyar@gmail.com" },
+    { name = "Abdulrahman Ali", email = "teybo.dev@gmail.com" },
+    { name = "Doron Zavelevsky",  email = "doron88@gmail.com" }
+]
+maintainer = [
+    { name = "Fazri Gading", email = "fazrigading@gmail.com" }
+]
+description = "iPhone Link - Native iPhone Mirroring and Control for Linux"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -15,6 +23,8 @@ dependencies = [
     "pystray>=0.19",
     "Pillow>=10.0"
 ]
+license = "GPL-3.0"
+
 
 [tool.setuptools.packages.find]
 where = ["."]

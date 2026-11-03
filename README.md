@@ -86,8 +86,8 @@ chmod +x run.sh
 ## Credits
 
 - **Author & Maintainer (Linux Port)**: Fazri Gading - <https://github.com/fazrigading/iphone-link-linux>
-- **Original Author (Windows)**: kelvindaniyar - <https://github.com/kelvindaniyar/iphone-link>
-- **Upstream Project**: teyboxv1/pane‑iphone‑mirror‑windows - <https://github.com/teyboxv1/pane-iphone-mirror-windows>
+- **Original Author (Windows)**: Kelvin Daniyar (`iphone-link`) - <https://github.com/kelvindaniyar/iphone-link>
+- **Upstream Project**: Abdulrahman Ali (`pane`) - <https://github.com/teyboxv1/pane-iphone-mirror-windows>
 - **Core Library**: Doron Zavelevsky (`pymobiledevice3`) - <https://github.com/doronz88/pymobiledevice3>
 
 ## License
