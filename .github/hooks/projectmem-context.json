@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "/home/fazrigading/.local/bin/tokless projectmem-hook flat",
+        "timeout": 10
+      }
+    ]
+  }
+}

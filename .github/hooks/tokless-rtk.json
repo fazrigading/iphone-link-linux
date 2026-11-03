@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "/home/fazrigading/.local/bin/tokless rtk-hook copilot"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "/home/fazrigading/.local/bin/tokless rtk-hook copilot"
+      }
+    ]
+  }
+}
