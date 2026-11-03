@@ -13,18 +13,6 @@ import threading
 import time
 from pathlib import Path
 
-try:
-    import gi  # noqa: F401
-except Exception:
-    _ver = f"{sys.version_info.major}.{sys.version_info.minor}"
-    for _base in ("/usr/lib", "/usr/lib64", "/usr/local/lib"):
-        for _sub in ("site-packages", "dist-packages"):
-            _candidate = f"{_base}/python{_ver}/{_sub}"
-            if os.path.isdir(_candidate) and _candidate not in sys.path:
-                sys.path.append(_candidate)
-    if os.path.isdir("/usr/lib/python3/dist-packages") and "/usr/lib/python3/dist-packages" not in sys.path:
-        sys.path.append("/usr/lib/python3/dist-packages")
-
 from handset import get_app_root, get_bundle_root, get_user_cache_dir
 from handset.server import HOST, PORT
 from handset.clipboard import get_clipboard_text, set_clipboard_text
