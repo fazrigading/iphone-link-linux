@@ -13,12 +13,28 @@ import time
 from pathlib import Path
 
 # pywebview's Linux GTK backend needs PyGObject (python3-gobject / python3-gi),
-# which is a system package and is not pip-installable into the venv. Make the
-# system site-packages available so `import gi` resolves when running from a
-# venv that does not include it.
+# which is a system package and is not pip-installable into the venv.
+# 
+# NOTE: A failed `import gi` leaves a partially-initialized module in
+# `sys.modules`. On the next import attempt Python reuses that broken cache
+# entry instead of reloading from disk, producing a misleading "circular
+# import" error. We defer gi.require_version until webview.start()
+# to avoid the import failure.
+
+# Track whether gi is available for GTK/WebKit2 backend
+_GI_AVAILABLE = False
+
 try:
-    import gi  # noqa: F401
+    import gi
+    _GI_AVAILABLE = True
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("WebKit2", "4.1")
 except Exception:
+    # If gi fails to import, defer require_version until webview.start()
+    # This avoids the circular import error in CI
+    _GI_AVAILABLE = False
+    
+    # Add system paths for gi if needed
     _ver = f"{sys.version_info.major}.{sys.version_info.minor}"
     for _base in ("/usr/lib", "/usr/lib64", "/usr/local/lib"):
         for _sub in ("site-packages", "dist-packages"):
@@ -27,21 +43,6 @@ except Exception:
                 sys.path.append(_candidate)
     if os.path.isdir("/usr/lib/python3/dist-packages") and "/usr/lib/python3/dist-packages" not in sys.path:
         sys.path.append("/usr/lib/python3/dist-packages")
-
-try:
-    import gi  # noqa: F401
-    gi.require_version("Gtk", "3.0")
-    gi.require_version("WebKit2", "4.1")
-except Exception as _gi_err:
-    print(
-        "iPhone Link: missing Linux system dependency PyGObject/WebKit2GTK.\n"
-        "  Fedora:   sudo dnf install python3-gobject webkit2gtk4.1\n"
-        "  Debian:   sudo apt install python3-gi gir1.2-webkit2-4.1\n"
-        "  Arch:     sudo pacman -S python-gobject webkit2gtk\n"
-        f"  (import error: {_gi_err})",
-        file=sys.stderr,
-    )
-    raise SystemExit(2)
 
 from handset import get_app_root, get_bundle_root, get_user_cache_dir, get_user_state_dir
 from handset.server import HOST, PORT, create_http_server
