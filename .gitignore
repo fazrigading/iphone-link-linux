@@ -14,3 +14,4 @@ dist/
 # Editor / IDE
 .vscode/
 .idea/
+AppDir/*

@@ -2,13 +2,6 @@
 set -euo pipefail
 
 # iPhone Link — Linux launcher
-# This script launches iPhone Link from a source checkout.
-# For a standalone frozen build, run the frozen executable instead.
-#
-# Usage:
-#   ./run.sh                # normal launch
-#   ./run.sh --verbose      # verbose: keep backend logs in ./iphone-link.log
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -22,6 +15,37 @@ done
 if [ "$VERBOSE" = "1" ]; then
   export PANE_VERBOSE=1
   echo "iPhone Link: VERBOSE mode — backend logs -> ${XDG_STATE_HOME:-$HOME/.local/state}/iphone-link/iphone-link.log" >&2
+fi
+
+# AppImage support
+if [ -n "${APPDIR:-}" ]; then
+  # Use bundled python
+  if [ -x "$APPDIR/usr/bin/python3" ]; then
+    PYTHON="$APPDIR/usr/bin/python3"
+  elif [ -x "$APPDIR/bin/python3" ]; then
+    PYTHON="$APPDIR/bin/python3"
+  else
+    PYTHON="$(command -v python3 || command -v python)"
+  fi
+  
+  # Set up PYTHONPATH for bundled packages
+  for p in "$APPDIR/usr/lib/python3.14/site-packages" "$APPDIR/usr/lib/python3.12/site-packages" "$APPDIR/usr/lib/python3.11/site-packages"; do
+    if [ -d "$p" ]; then
+      export PYTHONPATH="$p${PYTHONPATH:+:$PYTHONPATH}"
+    fi
+  done
+  
+  # Linux dependency checks for AppImage
+  if ! command -v usbmuxd >/dev/null 2>&1; then
+    echo "iPhone Link: usbmuxd not found. Install it:" >&2
+    echo "  Fedora: sudo dnf install usbmuxd libimobiledevice ifuse" >&2
+    echo "  Debian: sudo apt install usbmuxd libimobiledevice6 ifuse" >&2
+    echo "  Arch:   sudo pacman -S usbmuxd libimobiledevice ifuse" >&2
+    exit 1
+  fi
+  
+  exec "$PYTHON" -m handset "$@"
+  exit $?
 fi
 
 if command -v python3 >/dev/null 2>&1; then
