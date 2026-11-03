@@ -1805,11 +1805,7 @@ def _score_gap_quality(gap_lines: list[str]) -> int:
 
 def _complete_usernames(text: str) -> str:
     """
-    Self-Consistent @Username Completion:
-    If the document has a full mention like '@erikkristian' or '@andribotox' in Paragraph 2,
-    and another line (e.g. Source line) has a truncated mention or handle occluded by selection handle
-    (e.g. '@andriboto<', '@andriboto|', '@erikkrist', '@eril<l<rist', '@erikkri'),
-    automatically complete it to the full mention.
+    Self-Consistent @Username Completion
     """
     if not text or "@" not in text:
         return text
