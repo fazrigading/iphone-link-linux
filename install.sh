@@ -10,12 +10,12 @@ cd "$SCRIPT_DIR"
 
 echo "iPhone Link: checking system dependencies..."
 if command -v dnf >/dev/null 2>&1; then
-  sudo dnf install -y python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice ifuse xclip wl-clipboard || true
+  sudo dnf install -y python3-gobject webkit2gtk4.1 usbmuxd libimobiledevice libimobiledevice-utils ifuse xclip wl-clipboard || true
 elif command -v apt-get >/dev/null 2>&1; then
   sudo apt-get update
-  sudo apt-get install -y python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 ifuse xclip wl-clipboard || true
+  sudo apt-get install -y python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice-1.0-6 libimobiledevice-utils ifuse xclip wl-clipboard || true
 elif command -v pacman >/dev/null 2>&1; then
-  sudo pacman -S --needed --noconfirm python-gobject webkit2gtk usbmuxd libimobiledevice ifuse xclip wl-clipboard || true
+  sudo pacman -S --needed --noconfirm python-gobject webkit2gtk usbmuxd libimobiledevice libimobiledevice-utils ifuse xclip wl-clipboard || true
 fi
 
 if [ ! -d ".venv" ]; then

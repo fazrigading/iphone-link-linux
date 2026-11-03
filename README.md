@@ -43,7 +43,7 @@
     ```
   - **Debian/Ubuntu**:
     ```bash
-    sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice6 libimobiledevice-utils ifuse xclip wl-clipboard
+    sudo apt install python3-gi gir1.2-webkit2-4.1 usbmuxd libimobiledevice-1.0-6 libimobiledevice-utils ifuse xclip wl-clipboard
     ```
   - **Arch**:
     ```bash
